@@ -26,7 +26,9 @@ namespace TGCore.Library
 				{
 					var shape = part.shape;
 					shape.meshRenderer = meshRenderer;
+					
 					findEvent.Invoke();
+					if (play) part.Play();
 				}
 				
 				if (!disableParticles) return;
@@ -52,7 +54,9 @@ namespace TGCore.Library
 				{
 					var shape = GetComponent<ParticleSystem>().shape;
 					shape.skinnedMeshRenderer = skinnedMeshRend;
+					
 					findEvent.Invoke();
+					if (play) part.Play();
 				}
 			}
 			else
@@ -71,7 +75,9 @@ namespace TGCore.Library
 				{
 					var shape = part.shape;
 					shape.meshRenderer = meshRenderer;
+					
 					findEvent.Invoke();
+					if (play) part.Play();
 				}
 			}
 		}
@@ -97,5 +103,6 @@ namespace TGCore.Library
 		
 		public bool disableMesh;
 		public bool disableParticles;
+		public bool play = true;
 	}
 }
