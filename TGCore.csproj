@@ -459,8 +459,10 @@
     <Compile Include="HarmonyPatches\UnKillablePatch.cs" />
     <Compile Include="HarmonyPatches\WaterDamagePatch.cs" />
     <Compile Include="Library\AddDamageToUnitPart.cs" />
+    <Compile Include="Library\AddEffectToRandomUnits.cs" />
     <Compile Include="Library\AddEffectToTargetOnce.cs" />
     <Compile Include="Library\AddRigidbodyThenSinkOnDeath.cs" />
+    <Compile Include="Library\AssignMeshToParticleSystem.cs" />
     <Compile Include="Library\Effect_Disintegrate.cs" />
     <Compile Include="Library\Effect_Transformation.cs" />
     <Compile Include="Library\Effect_Weakening.cs" />
