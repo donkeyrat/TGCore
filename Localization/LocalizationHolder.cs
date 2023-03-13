@@ -1,38 +1,34 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace TGCore.Localization
 {
     public class LocalizationHolder : MonoBehaviour
     {
-        public LocalizationHolder()
-        {
-            english = gameObject.AddComponent<LocalizationEntry>();
-            russian = gameObject.AddComponent<LocalizationEntry>();
-            chinese = gameObject.AddComponent<LocalizationEntry>();
-            french = gameObject.AddComponent<LocalizationEntry>();
-            spanish = gameObject.AddComponent<LocalizationEntry>();
-            japanese = gameObject.AddComponent<LocalizationEntry>();
-            deutsch = gameObject.AddComponent<LocalizationEntry>();
-            italian = gameObject.AddComponent<LocalizationEntry>();
-            portugeuse = gameObject.AddComponent<LocalizationEntry>();
-        }
-        
-        public LocalizationEntry english;
-        
-        public LocalizationEntry russian;
-        
-        public LocalizationEntry chinese;
-        
-        public LocalizationEntry french;
-        
-        public LocalizationEntry spanish;
-        
-        public LocalizationEntry japanese;
-        
-        public LocalizationEntry deutsch;
-        
-        public LocalizationEntry italian;
-        
-        public LocalizationEntry portugeuse;
+        public void ReadLocalization()
+		{
+			Debug.Log("LOCALIZING...");
+			
+			var locField = typeof(Localizer).GetField("m_localization", BindingFlags.Static | BindingFlags.NonPublic);
+            var localizer = (Dictionary<Localizer.Language, Dictionary<string, string>>)locField.GetValue(null);
+
+            try
+            {
+                foreach (var lang in languages.Where(x => x.key.Count > 0 && x.value.Count > 0))
+                {
+                    for (var i = 0; i < lang.key.Count; i++) localizer[lang.langage].Add(lang.key[i], lang.value[i]);
+                }
+            }
+            catch (Exception exception)
+            {
+	            Debug.LogError("LOCALIZATION HAS FAILED:");
+                Debug.LogError(exception);
+            }
+		}
+
+        public List<LocalizationEntry> languages;
     }
 }

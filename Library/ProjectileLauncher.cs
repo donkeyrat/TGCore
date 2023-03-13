@@ -7,7 +7,7 @@ namespace TGCore.Library
 {
     public class ProjectileLauncher : MonoBehaviour
     {
-		void Awake() 
+		private void Awake() 
 		{
 			if (GetComponent<RangeWeapon>() && GetComponent<RangeWeapon>().ObjectToSpawn)
 			{
@@ -17,7 +17,7 @@ namespace TGCore.Library
 			}
 		}
 
-		void Start() 
+		private void Start() 
 		{
 			attackEffects = GetComponents<ProjectileLauncherEffect>();
 			showProjectile = GetComponent<ProjectileLauncherShowProjectile>();
@@ -136,12 +136,14 @@ namespace TGCore.Library
 		[Header("Spawn Settings")]
 
 		public GameObject objectToSpawn;
-		
-		public AnimationCurve shootHelpAngleCurve = new AnimationCurve();
 
         public float spawnDelay = 0.4f;
 
 		public bool parentToMe;
+		
+		[Header("Other Settings")]
+		
+		public AnimationCurve shootHelpAngleCurve = new AnimationCurve();
 
 		public UnityEvent attackEvent = new UnityEvent();
 

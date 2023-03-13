@@ -22,7 +22,7 @@ namespace TGCore
 			instance = this;
 			Debug.Log("LOADING TGCORE...");
 			
-			AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
+			//AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
 
 			new Harmony("TGCore").PatchAll();
 
@@ -61,7 +61,7 @@ namespace TGCore
 			modList.RemoveAll(x => failedModList.Contains(x));
 			
 			UpdateSoundBank();
-			ReadLocalization(languageHolder);
+			languageHolder.ReadLocalization();
 			
 			foreach (var mod in modList)
 			{
@@ -123,59 +123,6 @@ namespace TGCore
 					Debug.LogError(exception);
 				}
 			}
-		}
-
-		public void ReadLocalization(LocalizationHolder languageHolder)
-		{
-			Debug.Log("LOCALIZING...");
-			
-			var locField = typeof(Localizer).GetField("m_localization", BindingFlags.Static | BindingFlags.NonPublic);
-            var languages = (Dictionary<Localizer.Language, Dictionary<string, string>>)locField.GetValue(null);
-
-            try
-            {
-                for (var i = 0; i < languageHolder.english.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_EN_US].Add(languageHolder.english.key[i], languageHolder.english.value[i]);
-                }
-                for (var i = 0; i < languageHolder.russian.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_RU].Add(languageHolder.russian.key[i], languageHolder.russian.value[i]);
-                }
-                for (var i = 0; i < languageHolder.chinese.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_CH].Add(languageHolder.chinese.key[i], languageHolder.chinese.value[i]);
-                }
-                for (var i = 0; i < languageHolder.french.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_FR].Add(languageHolder.french.key[i], languageHolder.french.value[i]);
-                }
-                for (var i = 0; i < languageHolder.spanish.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_ES].Add(languageHolder.spanish.key[i], languageHolder.spanish.value[i]);
-                }
-                for (var i = 0; i < languageHolder.japanese.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_JA].Add(languageHolder.japanese.key[i], languageHolder.japanese.value[i]);
-                }
-                for (var i = 0; i < languageHolder.deutsch.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_DE].Add(languageHolder.deutsch.key[i], languageHolder.deutsch.value[i]);
-                }
-                for (var i = 0; i < languageHolder.italian.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_IT].Add(languageHolder.italian.key[i], languageHolder.italian.value[i]);
-                }
-                for (var i = 0; i < languageHolder.portugeuse.key.Count; i++)
-                {
-                    languages[Localizer.Language.LANG_PT_BR].Add(languageHolder.portugeuse.key[i], languageHolder.portugeuse.value[i]);
-                }
-            }
-            catch (Exception exception)
-            {
-	            Debug.LogError("LOCALIZATION HAS FAILED:");
-                Debug.LogError(exception);
-            }
 		}
 
 		public static TGMain instance;

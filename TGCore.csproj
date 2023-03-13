@@ -461,11 +461,18 @@
     <Compile Include="Library\AddDamageToUnitPart.cs" />
     <Compile Include="Library\AddEffectToTargetOnce.cs" />
     <Compile Include="Library\AddRigidbodyThenSinkOnDeath.cs" />
+    <Compile Include="Library\Effect_Disintegrate.cs" />
+    <Compile Include="Library\Effect_Transformation.cs" />
+    <Compile Include="Library\Effect_Weakening.cs" />
+    <Compile Include="Library\Effect_Zombie.cs" />
     <Compile Include="Library\FloatyPhysics.cs" />
     <Compile Include="Library\FollowLineSegments.cs" />
     <Compile Include="Library\FollowTransformWithDrag.cs" />
+    <Compile Include="Library\FreezeSelf.cs" />
+    <Compile Include="Library\HoldingHandlerMulti.cs" />
     <Compile Include="Library\LerpAnimationMultiplier.cs" />
     <Compile Include="Library\LineWidthOverTime.cs" />
+    <Compile Include="Library\Revive.cs" />
     <Compile Include="Library\RotationShakeCodeAnimation.cs" />
     <Compile Include="Library\ShootPositionCycle.cs" />
     <Compile Include="Library\CannotDrown.cs" />
@@ -502,36 +509,23 @@
     <Compile Include="Library\ReturnableProjectile.cs" />
     <Compile Include="Library\RiseOnSpawn.cs" />
     <Compile Include="Library\SetParentRoot.cs" />
-    <Compile Include="Library\SetSelfKinematic.cs" />
     <Compile Include="Library\ProjectileLauncher.cs" />
     <Compile Include="Library\ProjectileLauncherEffect.cs" />
     <Compile Include="Library\SidewaysForce.cs" />
+    <Compile Include="Library\SpikeBehavior.cs" />
     <Compile Include="Library\StealRotation.cs" />
     <Compile Include="Library\TeamColorEvent.cs" />
     <Compile Include="Library\LoadScene.cs" />
     <Compile Include="Library\UnitPartBreaking.cs" />
     <Compile Include="Library\UnKillable.cs" />
     <Compile Include="Library\Volley.cs" />
+    <Compile Include="Library\WeaponSwap.cs" />
     <Compile Include="Localization\LocalizationEntry.cs" />
     <Compile Include="Localization\LocalizationHolder.cs" />
     <Compile Include="TGAddons.cs" />
     <Compile Include="TGMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TGMod.cs" />
-	<Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\tgcore" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
