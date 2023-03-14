@@ -11,22 +11,23 @@ namespace TGCore.Library
             line = GetComponent<LineRenderer>();
         }
 
-        public void Activate()
+        public void Activate(float speed = 1f)
         {
-            StartCoroutine(Animate(true));
+            StartCoroutine(Animate(true, speed));
         }
 
-        public void Deactivate()
+        public void Deactivate(float speed = 1f)
         {
-            StartCoroutine(Animate(false));
+            StartCoroutine(Animate(false, speed));
         }
 
-        private IEnumerator Animate(bool activating)
+        private IEnumerator Animate(bool activating, float speed)
         {
             var t = 0f;
             while (t < 1f)
             {
-                t += Time.deltaTime;
+                t += Time.deltaTime * speed;
+                
                 line.widthMultiplier = Mathf.Lerp(activating ? 0f : scaleMultiplier, activating ? scaleMultiplier : 0f, Mathf.Clamp(t, 0f, 1f));
                 yield return null;
             }

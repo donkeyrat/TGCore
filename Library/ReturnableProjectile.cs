@@ -24,9 +24,10 @@ namespace TGCore.Library
             var t = 0f;
             var beginPosition = transform.position;
             var beginRotation = transform.rotation;
+            var endPosition = returnObject.position + returnObject.TransformPoint(offset);
             while (t < 1f)
             {
-                transform.position = Vector3.Lerp(beginPosition, returnObject.position, t);
+                transform.position = Vector3.Lerp(beginPosition, endPosition, t);
                 transform.rotation = Quaternion.Lerp(beginRotation, returnObject.rotation, t);
                 
                 t += Time.deltaTime * speed;
@@ -45,6 +46,7 @@ namespace TGCore.Library
         private ProjectileStick stick;
 
         public string objectToReturnTo;
+        public Vector3 offset;
 
         public float speed = 1f;
     }

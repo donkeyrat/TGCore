@@ -9,7 +9,12 @@ namespace TGCore.Library
         {
             rangeWeapon = GetComponent<RangeWeapon>();
             
-            spawned = Instantiate(GetComponent<ProjectileLauncher>().objectToSpawn, pivot.position, pivot.rotation);
+            spawned = Instantiate(GetComponent<ProjectileLauncher>().objectToSpawn, pivot.position, pivot.rotation, pivot);
+
+            var idle = spawned.GetComponentInChildren<ArrowIdlePosition>();
+            if (idle) spawned.transform.localPosition = idle.transform.localPosition;
+            spawned.transform.localPosition += offset;
+            
             if (rangeWeapon && rangeWeapon.connectedData != null)
             {
                 var componentsInChildren = spawned.GetComponentsInChildren<Renderer>(); 
@@ -28,7 +33,6 @@ namespace TGCore.Library
                 if (!(mono is SetTeamColorOnStart) && !(mono is TeamColor)) Destroy(mono);
             }
             
-            spawned.transform.SetParent(pivot, true);
             spawned.transform.localScale = Vector3.one;
             
             foreach (var particle in spawned.GetComponentsInChildren<ParticleSystem>()) 
@@ -44,5 +48,7 @@ namespace TGCore.Library
         private RangeWeapon rangeWeapon;
 
         public Transform pivot;
+
+        public Vector3 offset;
     }
 }
