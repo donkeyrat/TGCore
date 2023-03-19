@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 
 namespace TGCore 
 {
-	[BepInPlugin("teamgrad.core", "Team Grad Core", "1.0.0")]
+	[BepInPlugin("teamgrad.core", "Team Grad Core", "1.0.1")]
 	public class TGMain : BaseUnityPlugin 
 	{
 		private void Awake()
@@ -22,7 +22,7 @@ namespace TGCore
 			instance = this;
 			Debug.Log("LOADING TGCORE...");
 			
-			//AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
+			AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
 
 			new Harmony("TGCore").PatchAll();
 

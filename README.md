@@ -14,10 +14,15 @@ This mod does nothing on its own. You will know its installed if you see a speci
 
 The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to view the full changelog.
 
-# 1.0.0
+## 1.0.0
 
  - Added coding library.
  - Added a new splash screen.
+
+### 1.0.1
+
+ - Added more code.
+ - Updated the splash screen.
 
 ## Credits
 
