@@ -23,7 +23,19 @@ namespace TGCore.Library
 			showProjectile = GetComponent<ProjectileLauncherShowProjectile>();
 			myLevel = GetComponent<Level>();
 			shootPosition = GetComponentInChildren<ShootPosition>() ? GetComponentInChildren<ShootPosition>().transform : transform;
-			weapon = GetComponent<Weapon>();
+			
+			var weapon = GetComponent<Weapon>();
+			var rootUnit = transform.root.GetComponent<Unit>();
+			var teamHolder = GetComponent<TeamHolder>();
+			
+			if (weapon)
+			{
+				ownUnit = weapon.connectedData.unit;
+				levelMultiplier = weapon.levelMultiplier;
+			}
+			else if (rootUnit) ownUnit = rootUnit;
+			else if (teamHolder) ownUnit = teamHolder.spawner.GetComponent<Unit>();
+			
 		}
 
         public void Throw()
@@ -31,9 +43,10 @@ namespace TGCore.Library
             StartCoroutine(DelayedSwing());
         }
 
-        public IEnumerator DelayedSwing()
+        private IEnumerator DelayedSwing()
         {
-			var target = weapon.connectedData.targetData.unit;
+			var target = ownUnit.data.targetData.unit;
+			
 			if (!target) yield break;
 			
 			foreach (var effect in attackEffects) effect.DoEffect(target.data.mainRig);
@@ -51,9 +64,9 @@ namespace TGCore.Library
 			SetProjectileStats(spawnedObject, spawnDirection, (target.data.mainRig.position - shootPosition.position).normalized, target.data.mainRig, shootPosition.forward, target.data.mainRig.position, target.data.mainRig.velocity);
 			
 			var team = spawnedObject.AddComponent<TeamHolder>();
-			team.spawner = weapon.connectedData.unit.gameObject;
+			team.spawner = ownUnit.gameObject;
 			team.spawnerWeapon = gameObject;
-			team.team = weapon.connectedData.unit.Team;
+			team.team = ownUnit.Team;
 			team.target = target.data.mainRig;
         }
 
@@ -67,20 +80,19 @@ namespace TGCore.Library
 					rig.AddForce(spawnDir * 1f, ForceMode.VelocityChange);
 					if (myLevel)
 					{
-						rig.mass *= Mathf.Pow((float)myLevel.level, 1.5f);
+						rig.mass *= Mathf.Pow(myLevel.level, 1.5f);
 					}
 				}
 				var compensation = projectile.transform.GetChild(i).GetComponentInChildren<Compensation>();
 				if (compensation && targetRig)
 				{
-					compensation.transform.rotation = Quaternion.LookRotation(compensation.GetCompensation(targetRigPosition, targetRigVelocity, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPositionForward))) + Random.insideUnitSphere * 1f * 0.01f);
+					compensation.transform.rotation = Quaternion.LookRotation(compensation.GetCompensation(targetRigPosition, targetRigVelocity, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPositionForward))) + Random.insideUnitSphere * 0.01f);
 				}
-				MoveTransform componentInChildren2 = projectile.GetComponentInChildren<MoveTransform>();
-				if (componentInChildren2)
+				var moveTransform = projectile.GetComponentInChildren<MoveTransform>();
+				if (moveTransform)
 				{
 					if (compensation && compensation.forwardCompensation > 0f && targetRig)
 					{
-						MoveTransform moveTransform = componentInChildren2;
 						moveTransform.selfImpulse.z += Mathf.Pow(Mathf.Clamp(Vector3.Distance(targetRigPosition, transform.position), 0f, compensation.clampDistance), compensation.rangePow) * compensation.forwardCompensation;
 					}
 				}
@@ -94,7 +106,7 @@ namespace TGCore.Library
 				{
 					projectileHit.damage *= levelMultiplier;
 					
-					if (weapon.connectedData && weapon.connectedData.input.hasControl) projectileHit.alwaysHitTeamMates = true;
+					if (ownUnit.data.input.hasControl) projectileHit.alwaysHitTeamMates = true;
 					if (myLevel) projectileHit.ignoreTeamMates = myLevel.ignoreTeam;
 				}
 				var collision = projectile.transform.GetChild(i).GetComponentInChildren<CollisionWeapon>();
@@ -114,8 +126,8 @@ namespace TGCore.Library
 
 		private Vector3 GetSpawnDirection(Vector3 directionToTarget, Rigidbody targetRig, Vector3 forcedDirection)
 		{
-			var result = Vector3.Lerp(directionToTarget, shootPosition.forward, this.shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPosition.forward))).normalized;
-			if (weapon.connectedData && weapon.connectedData.input.hasControl)
+			var result = Vector3.Lerp(directionToTarget, shootPosition.forward, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPosition.forward))).normalized;
+			if (ownUnit.data.input.hasControl)
 			{
 				if (!targetRig)
 				{
@@ -126,7 +138,7 @@ namespace TGCore.Library
 		}
 
 		private Transform shootPosition;
-		private Weapon weapon;
+		private Unit ownUnit;
 		private GameObject spawnedObject;
 		private ProjectileLauncherEffect[] attackEffects;
 		private ProjectileLauncherShowProjectile showProjectile;
