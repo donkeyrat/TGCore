@@ -22,7 +22,7 @@ namespace TGCore
 			instance = this;
 			Debug.Log("LOADING TGCORE...");
 			
-			AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
+			//AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
 
 			new Harmony("TGCore").PatchAll();
 
