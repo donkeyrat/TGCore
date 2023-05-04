@@ -10,10 +10,10 @@ namespace TGCore.HarmonyPatches
         [HarmonyPrefix]
         public static bool Prefix(DataHandler __instance, ref bool value)
         {
-            if (value && !(bool)__instance.GetField("dead"))
+            if (__instance && __instance.healthHandler && value && !(bool)__instance.GetField("dead"))
             {
-                GameModeService service = ServiceLocator.GetService<GameModeService>();
-                if (service.CurrentGameMode == null)
+                var service = ServiceLocator.GetService<GameModeService>();
+                if (!service || service.CurrentGameMode == null)
                 {
                     Debug.LogError("Could not find CurrentGameMode!");
                 }

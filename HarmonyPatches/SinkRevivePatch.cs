@@ -6,9 +6,10 @@ namespace TGCore.HarmonyPatches
     internal class ReviveFixer 
     {
         [HarmonyPrefix]
-        public static bool Prefix(SinkOnDeath __instance, ref DataHandler ___data)
+        public static bool Prefix(SinkOnDeath __instance)
         {
-            return !___data.healthHandler.willBeRewived;
+            var data = __instance.GetComponentInChildren<DataHandler>();;
+            return !data.healthHandler.willBeRewived;
         }
     }
 }

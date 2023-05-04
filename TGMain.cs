@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 
 namespace TGCore 
 {
-	[BepInPlugin("teamgrad.core", "Team Grad Core", "1.0.4")]
+	[BepInPlugin("teamgrad.core", "Team Grad Core", "1.0.5")]
 	public class TGMain : BaseUnityPlugin
 	{
 		private void Awake()

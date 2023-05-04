@@ -35,6 +35,10 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
  ### 1.0.4
 
  - Fixed a problem with localization.
+ 
+ ### 1.0.5
+
+ - Fixed a problem with units who sink on death being unable to die.
 
 ## Credits
 
