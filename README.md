@@ -27,6 +27,10 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
 ### 1.0.2
 
  - Added more code.
+ 
+ ### 1.0.3
+
+ - Fixed a problem with the custom outline code.
 
 ## Credits
 
