@@ -13,13 +13,13 @@ namespace TGCore.Localization
 			Debug.Log("LOCALIZING...");
 			
 			var locField = typeof(Localizer).GetField("m_localization", BindingFlags.Static | BindingFlags.NonPublic);
-            var localizer = (Dictionary<Localizer.Language, Dictionary<string, string>>)locField.GetValue(null);
+            var localizer = (Dictionary<Localizer.Language, Dictionary<string, string>>)locField?.GetValue(null);
 
             try
             {
                 foreach (var lang in languages.Where(x => x.key.Count > 0 && x.value.Count > 0))
                 {
-                    for (var i = 0; i < lang.key.Count; i++) localizer[lang.langage].Add(lang.key[i], lang.value[i]);
+                    for (var i = 0; i < lang.key.Count; i++) localizer?[lang.langage].Add(lang.key[i], lang.value[i]);
                 }
             }
             catch (Exception exception)
@@ -29,6 +29,6 @@ namespace TGCore.Localization
             }
 		}
 
-        public List<LocalizationEntry> languages;
+        public List<LocalizationEntry> languages = new List<LocalizationEntry>();
     }
 }

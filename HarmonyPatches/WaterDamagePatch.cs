@@ -17,13 +17,13 @@ namespace TGCore.HarmonyPatches
 			}
 			
 			var componentInChildren = other.transform.root.GetComponentInChildren<DataHandler>();
-			var drown = componentInChildren.unit.GetComponentInChildren<CannotDrown>();
+			var drown = componentInChildren?.unit?.GetComponentInChildren<CannotDrown>();
 			
 			if (componentInChildren && !drown)
 			{
 				if (__instance.damageOverTime != 0f && !componentInChildren.Dead && other.gameObject.layer == LayerMask.NameToLayer("MainRig"))
 				{
-					componentInChildren.healthHandler.TakeDamage(__instance.damageOverTime * Time.deltaTime * (0.01f * componentInChildren.maxHealth), Vector3.zero, null, DamageType.Default);
+					componentInChildren.healthHandler.TakeDamage(__instance.damageOverTime * Time.deltaTime * (0.01f * componentInChildren.maxHealth), Vector3.zero);
 				}
 				if (componentInChildren.Dead && __instance.deadForce != 0f)
 				{
@@ -43,8 +43,8 @@ namespace TGCore.HarmonyPatches
 				return false;
 			}
 			
- 			componentInParent.angularVelocity *= 0.9f;
-			componentInParent.velocity *= 0.9f;
+ 			componentInParent.angularVelocity *= 0.15f;
+			componentInParent.velocity *= 0.15f;
 			return false;
         }
     }
