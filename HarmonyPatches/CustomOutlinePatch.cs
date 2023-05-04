@@ -2,14 +2,15 @@
 using HarmonyLib;
 using TFBGames;
 using TGCore.Library;
+using UnityEngine;
 
 namespace TGCore.HarmonyPatches
 {
-    [HarmonyPatch(typeof(Unit), "SetHighlight", MethodType.Setter)]
+    [HarmonyPatch(typeof(Unit), "SetHighlight")]
     internal class CustomOutlinePatch
     {
-        [HarmonyPrefix]
-        public static void Postfix(Unit __instance)
+        [HarmonyPostfix]
+        public static void Postfix(Unit __instance, ref Color highlightColor)
         {
             if (__instance.GetComponentInChildren<ChangeOutline>() != null)
             {

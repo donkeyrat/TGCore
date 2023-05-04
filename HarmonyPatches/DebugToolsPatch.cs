@@ -11,7 +11,7 @@ namespace TGCore.HarmonyPatches
     internal class DebugToolsPatch 
     {
         [HarmonyPrefix]
-        public static bool Start(CameraSpawnObject __instance, ref InputService ___inputService, ref int ___currentSelectedIndex) 
+        public static bool Prefix(CameraSpawnObject __instance, ref InputService ___inputService, ref int ___currentSelectedIndex)
         {
             var newObjectsToSpawn = new List<GameObject>();
             var newSounds = new List<string>();
