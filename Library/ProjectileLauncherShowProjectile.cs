@@ -5,7 +5,7 @@ namespace TGCore.Library
 {
     public class ProjectileLauncherShowProjectile : MonoBehaviour 
     {
-        private void Start() 
+        private void Start()
         {
             rangeWeapon = GetComponent<RangeWeapon>();
             
@@ -18,7 +18,7 @@ namespace TGCore.Library
             if (rangeWeapon && rangeWeapon.connectedData != null)
             {
                 var componentsInChildren = spawned.GetComponentsInChildren<Renderer>(); 
-                rangeWeapon.connectedData.unit.AddRenderersToShowHide(componentsInChildren, GetComponent<ShowProjectile>().IsInBlindGame);
+                rangeWeapon.connectedData.unit.AddRenderersToShowHide(componentsInChildren, false);
             }
 
             foreach (var rig in spawned.GetComponentsInChildren<Rigidbody>())

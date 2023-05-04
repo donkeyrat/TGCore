@@ -1,5 +1,4 @@
-﻿/*
-using HarmonyLib;
+﻿using HarmonyLib;
 using Landfall.TABS;
 using TGCore.Library;
 
@@ -9,10 +8,9 @@ namespace TGCore.HarmonyPatches
     internal class UnKillablePatch 
     {
         [HarmonyPrefix]
-        public static bool Prefix(HealthHandler __instance, Unit damager = null)
+        public static bool Prefix(HealthHandler __instance, ref Unit damager)
         {
             return !__instance.transform.root.GetComponentInChildren<UnKillable>();
         }
     }
 }
-*/

@@ -1,5 +1,4 @@
-﻿/*
-using Landfall.TABS;
+﻿using Landfall.TABS;
 using HarmonyLib;
 using TFBGames;
 using TGCore.Library;
@@ -21,4 +20,3 @@ namespace TGCore.HarmonyPatches
         }
     }
 }
-*/

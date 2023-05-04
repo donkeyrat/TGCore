@@ -1,5 +1,4 @@
-﻿/*
-using UnityEngine;
+﻿using UnityEngine;
 using HarmonyLib;
 using TGCore.Library;
 
@@ -9,7 +8,7 @@ namespace TGCore.HarmonyPatches
     internal class WaterDamagePatch
     {
         [HarmonyPrefix]
-        public static bool Prefix(Water __instance, Collider other)
+        public static bool Prefix(Water __instance, ref Collider other)
         {
 			var componentInParent = other.GetComponentInParent<Rigidbody>();
 			if (!componentInParent)
@@ -28,17 +27,17 @@ namespace TGCore.HarmonyPatches
 				}
 				if (componentInChildren.Dead && __instance.deadForce != 0f)
 				{
-					componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.offet - other.transform.position.y) * 10f, 0f, 10f) * __instance.deadForce * Time.deltaTime, ForceMode.Acceleration);
+					componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.waterSinkOffset - other.transform.position.y) * 10f, 0f, 10f) * __instance.deadForce * Time.deltaTime, ForceMode.Acceleration);
 				}
 				componentInChildren.sinceGrounded = Mathf.Clamp(componentInChildren.sinceGrounded, float.NegativeInfinity, 1f);
-				componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.offet - other.transform.position.y) * 10f, 0f, 10f) * __instance.force * Time.deltaTime, ForceMode.Acceleration);
-				componentInParent.AddForce(__instance.transform.forward * Mathf.Clamp((__instance.transform.position.y + __instance.offet - other.transform.position.y) * 10f, 0f, 10f) * __instance.streamForce * Time.deltaTime, ForceMode.Acceleration);
+				componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.waterSinkOffset - other.transform.position.y) * 10f, 0f, 10f) * __instance.force * Time.deltaTime, ForceMode.Acceleration);
+				componentInParent.AddForce(__instance.transform.forward * Mathf.Clamp((__instance.transform.position.y + __instance.waterSinkOffset - other.transform.position.y) * 10f, 0f, 10f) * __instance.streamForce * Time.deltaTime, ForceMode.Acceleration);
 			}
 			else if (componentInChildren && drown) 
 			{
 				if (componentInChildren.Dead && __instance.deadForce != 0f) 
 				{
-					componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.offet - other.transform.position.y) * 10f, 0f, 10f) * __instance.deadForce * Time.deltaTime, ForceMode.Acceleration);
+					componentInParent.AddForce(Vector3.up * Mathf.Clamp((__instance.transform.position.y + __instance.waterSinkOffset - other.transform.position.y) * 10f, 0f, 10f) * __instance.deadForce * Time.deltaTime, ForceMode.Acceleration);
 				}
 				else componentInParent.AddForce(Vector3.up * 1000f * drown.upForceMultiplier * Time.deltaTime, ForceMode.Acceleration);
 				return false;
@@ -50,4 +49,3 @@ namespace TGCore.HarmonyPatches
         }
     }
 }
-*/

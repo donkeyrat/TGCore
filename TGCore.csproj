@@ -450,6 +450,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HarmonyPatches\SinkRevivePatch.cs" />
     <Compile Include="HarmonyPatches\SplashScreenPatch.cs" />
     <Compile Include="HarmonyPatches\CentaurArrowPatch.cs" />
     <Compile Include="HarmonyPatches\CustomOutlinePatch.cs" />
@@ -461,6 +462,7 @@
     <Compile Include="Library\AddDamageToUnitPart.cs" />
     <Compile Include="Library\AddEffectToRandomUnits.cs" />
     <Compile Include="Library\AddEffectToTargetOnce.cs" />
+    <Compile Include="Library\AddMountOnStart.cs" />
     <Compile Include="Library\AddRigidbodyThenSinkOnDeath.cs" />
     <Compile Include="Library\AssignMeshToParticleSystem.cs" />
     <Compile Include="Library\Effect_Disintegrate.cs" />
@@ -524,24 +526,19 @@
     <Compile Include="Library\WeaponSwap.cs" />
     <Compile Include="Localization\LocalizationEntry.cs" />
     <Compile Include="Localization\LocalizationHolder.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TGAddons.cs" />
     <Compile Include="TGMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TGMod.cs" />
-	<Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Content Include="Resources\tgcore" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\tgcore" />
+    <EmbeddedResource Include="Properties\Resources.resx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

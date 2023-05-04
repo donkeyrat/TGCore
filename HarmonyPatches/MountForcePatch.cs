@@ -1,6 +1,4 @@
-﻿/*
-using System.Reflection;
-using UnityEngine;
+﻿using UnityEngine;
 using HarmonyLib;
 using TGCore.Library;
 
@@ -19,4 +17,3 @@ namespace TGCore.HarmonyPatches
         }
     }
 }
-*/

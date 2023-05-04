@@ -11,6 +11,7 @@ namespace TGCore.HarmonyPatches
         [HarmonyPrefix]
         public static bool Prefix(UnitBowAnimation __instance, ref Transform ___originalParent, ref Transform ___startPos, ref ConfigurableJoint ___rightHandJoint)
         {
+            /*
             var transform = __instance.transform;
             if (!transform) return false;
             
@@ -31,6 +32,8 @@ namespace TGCore.HarmonyPatches
             }
             
             return false;
+            */
+            return true;
         }
     }
 }

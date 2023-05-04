@@ -24,6 +24,10 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
  - Added more code.
  - Updated the splash screen.
 
+### 1.0.2
+
+ - Added more code.
+
 ## Credits
 
 This mod was made by Team Grad, an ambitious modding team that aims to improve TABS through adding a plethora of new content!

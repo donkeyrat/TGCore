@@ -102,11 +102,24 @@ namespace TGCore
 
             var global = ServiceLocator.GetService<GlobalSettingsHandler>();
             SettingsInstance[] listToAdd;
-            if (settingListToAddTo == "BUG") listToAdd = global.BugsSettings;
-            else if (settingListToAddTo == "VIDEO") listToAdd = global.VideoSettings;
-            else if (settingListToAddTo == "AUDIO") listToAdd = global.AudioSettings;
-            else if (settingListToAddTo == "CONTROLS") listToAdd = global.ControlSettings;
-            else listToAdd = global.GameplaySettings;
+            switch (settingListToAddTo)
+            {
+	            case "BUG":
+		            listToAdd = global.BugsSettings;
+		            break;
+	            case "VIDEO":
+		            listToAdd = global.VideoSettings;
+		            break;
+	            case "AUDIO":
+		            listToAdd = global.AudioSettings;
+		            break;
+	            case "CONTROLS":
+		            listToAdd = global.ControlSettings;
+		            break;
+	            default:
+		            listToAdd = global.GameplaySettings;
+		            break;
+            }
 
             var list = listToAdd.ToList();
             list.Add(setting);
