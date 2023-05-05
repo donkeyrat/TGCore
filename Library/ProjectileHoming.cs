@@ -21,7 +21,7 @@ namespace TGCore.Library
         public override bool DoEffect(HitData hit)
         {
             var unit = hit.transform.root.GetComponent<Unit>();
-            if (!unit) return false;
+            if (!unit) return true;
             
             hitList.Add(unit);
             hitLimit -= 1;
@@ -31,7 +31,7 @@ namespace TGCore.Library
                 return false;
             }
             SetTarget();
-            return true;
+            return false;
         }
 
         public void Update() 

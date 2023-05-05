@@ -524,6 +524,7 @@
     <Compile Include="Library\UnKillable.cs" />
     <Compile Include="Library\Volley.cs" />
     <Compile Include="Library\WeaponSwap.cs" />
+    <Compile Include="Library\WeaponSwapEvent.cs" />
     <Compile Include="Localization\LocalizationEntry.cs" />
     <Compile Include="Localization\LocalizationHolder.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

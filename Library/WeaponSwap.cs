@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Landfall.TABS;
 using UnityEngine;
 using UnityEngine.Events;
@@ -31,7 +32,20 @@ namespace TGCore.Library
 
         private IEnumerator DoSwap()
         {
+            if (!unit || !unit.holdingHandler || !unit.WeaponHandler)
+            {
+                yield break;
+            }
+            
             beforeSwapEvent.Invoke();
+
+            var weapons = new List<Weapon>();
+            if (unit.WeaponHandler.leftWeapon) weapons.Add(unit.WeaponHandler.leftWeapon);
+            if (unit.WeaponHandler.rightWeapon) weapons.Add(unit.WeaponHandler.rightWeapon);
+            foreach (var weapon in weapons.Where(x => x.GetComponent<WeaponSwapEvent>()))
+            {
+                weapon.GetComponent<WeaponSwapEvent>().swapEvent.Invoke();
+            }
             
             yield return new WaitForSeconds(swapDelay);
 
@@ -51,6 +65,7 @@ namespace TGCore.Library
                 {
                     var dropped = unit.holdingHandler.rightObject.gameObject;
                     unit.holdingHandler.LetGoOfWeapon(dropped);
+                    foreach (var mono in dropped.GetComponentsInChildren<MonoBehaviour>()) mono.StopAllCoroutines();
                     Destroy(dropped);
                 }
                 if (weaponR)
@@ -66,6 +81,7 @@ namespace TGCore.Library
                 {
                     var dropped = unit.holdingHandler.leftObject.gameObject;
                     unit.holdingHandler.LetGoOfWeapon(dropped);
+                    foreach (var mono in dropped.GetComponentsInChildren<MonoBehaviour>()) mono.StopAllCoroutines();
                     Destroy(dropped);
                 }
                 if (weaponL)
