@@ -22,9 +22,9 @@ namespace TGCore.Library
             }
             else
             {
-                for (int i = 0; i < transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags.Length; i++)
+                var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
+                for (var i = 0; i < drag.Length; i++)
                 {
-                    var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
                     drag[i].x *= dragMultiplier;
                     drag[i].y *= dragMultiplier;
                 }
@@ -61,9 +61,9 @@ namespace TGCore.Library
 
         public void OnDestroy()
         {
-            for (int i = 0; i < transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags.Length; i++) {
-                
-                var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
+            var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
+            for (var i = 0; i < drag.Length; i++) 
+            {
                 drag[i].x /= dragMultiplier;
                 drag[i].y /= dragMultiplier;
             }

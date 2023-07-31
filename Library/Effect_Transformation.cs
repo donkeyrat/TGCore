@@ -12,7 +12,7 @@ namespace TGCore.Library
         {
             unit = transform.root.GetComponent<Unit>();
             dragHandler = unit.GetComponentInChildren<DragHandler>();
-            rigHolder = unit.GetComponentInChildren<RigidbodyHolder>();
+            rigHolder = unit.data.allRigs;
             colorHandler = unit.GetComponentInChildren<UnitColorHandler>();
             possess = MainCam.instance.GetComponentInParent<CameraAbilityPossess>();
             unparent = GetComponent<Unparent>();
@@ -33,13 +33,15 @@ namespace TGCore.Library
         {
             yield return new WaitForSeconds(SetState(TransformState.Transforming, false));
             
+            if (!unit || unit.data.Dead || unit.data.immunityForSeconds > 0) yield break;
+            
             var t = 0f;
-            while (t < transformDelay)
+            while (t < transformDelay && unit && !unit.data.Dead)
             {
-                if (unit.data.immunityForSeconds <= 0) effectDealt += effectOverTime * Time.deltaTime;
+                effectDealt += effectOverTime * Time.deltaTime;
                 
                 unit.data.healthHandler.TakeDamage(damageOverTime * Time.deltaTime, Vector3.zero);
-                for (int i = 0; i < rigHolder.AllDrags.Length; i++)
+                for (var i = 0; i < rigHolder.AllDrags.Length; i++)
                 {
                     rigHolder.AllDrags[i].x += dragOverTime * Time.deltaTime;
                     rigHolder.AllDrags[i].y += dragOverTime * Time.deltaTime;
@@ -50,6 +52,8 @@ namespace TGCore.Library
                 t += Time.deltaTime;
                 yield return null;
             }
+
+            if (!unit || unit.data.Dead) yield break;
 
             if (effectDealt / unit.data.maxHealth >= percentAffectedThreshold)
             {
@@ -64,7 +68,11 @@ namespace TGCore.Library
 
         private IEnumerator DoTransform()
         {
+            if (!unit || unit.data.Dead) yield break;
+            
             yield return new WaitForSeconds(SetState(TransformState.Transformed));
+            
+            if (!unit || unit.data.Dead) yield break;
             
             var newUnit = unitToTransformInto.Spawn(unit.data.mainRig.position, unit.data.mainRig.rotation, unit.Team)[0].GetComponent<Unit>();
             newUnit.gameObject.AddComponent<SpawnerBlueprintHolder>().unitBlueprint = unit.unitBlueprint;
@@ -78,8 +86,12 @@ namespace TGCore.Library
             unit.DestroyUnit();
 
             yield return new WaitForSeconds(revertDelay);
+            
+            if (!newUnit || newUnit.data.Dead) yield break;
 
             yield return new WaitForSeconds(SetState(TransformState.Reverted));
+
+            if (!newUnit || newUnit.data.Dead) yield break;
 
             unit = newUnit.GetComponent<SpawnerBlueprintHolder>().unitBlueprint.Spawn(newUnit.data.mainRig.position, newUnit.data.mainRig.rotation, unit.Team)[0].GetComponent<Unit>();
             if (keepOldHealth) unit.data.healthHandler.TakeDamage(unit.data.maxHealth - storedHealth, Vector3.zero);
@@ -88,14 +100,16 @@ namespace TGCore.Library
             newUnit.DestroyUnit();
         }
 
-        public IEnumerator DontTransform()
+        private IEnumerator DontTransform()
         {
             yield return new WaitForSeconds(SetState(TransformState.None, false));
+            
+            if (!unit || unit.data.Dead) yield break;
             
             var t = 0f;
             while (t < 1f)
             {
-                for (int i = 0; i < rigHolder.AllDrags.Length; i++)
+                for (var i = 0; i < rigHolder.AllDrags.Length; i++)
                 {
                     rigHolder.AllDrags[i].x = Mathf.Lerp(rigHolder.AllDrags[i].x, originalDrags[i].x, t);
                     rigHolder.AllDrags[i].y = Mathf.Lerp(rigHolder.AllDrags[i].y, originalDrags[i].y, t);

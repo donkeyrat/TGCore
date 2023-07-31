@@ -18,7 +18,5 @@ namespace TGCore.Library
         
         public string sceneToLoad;
         public bool forceInstantLoad = true;
-        
-        public float delay = 5f;
     }
 }

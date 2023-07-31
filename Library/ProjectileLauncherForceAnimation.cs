@@ -61,7 +61,7 @@ namespace TGCore.Library
 				if (data.sinceGrounded < 0.3f) 
 				{
 					int num;
-					for (int i = 0; i < usedRig.Length; i = num + 1) 
+					for (var i = 0; i < usedRig.Length; i = num + 1) 
 					{
 						usedRig[i].AddForce(animationDirection * (animation.rigAnimationForce * Time.deltaTime * asm * 100f * animation.rigAnimationCurve.Evaluate(c)), ForceMode.Acceleration);
 						num = i;
@@ -74,7 +74,7 @@ namespace TGCore.Library
 
 		private Vector3 SetDirection(Vector3 position, SpellAnimation animation) 
 		{
-			Vector3 vector = (position - transform.position).normalized;
+			var vector = (position - transform.position).normalized;
 
 			switch (animation.animationDirection)
 			{

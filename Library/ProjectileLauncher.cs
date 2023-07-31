@@ -7,13 +7,12 @@ namespace TGCore.Library
 {
     public class ProjectileLauncher : MonoBehaviour
     {
-		private void Awake() 
+		private void Awake()
 		{
-			if (GetComponent<RangeWeapon>() && GetComponent<RangeWeapon>().ObjectToSpawn)
+			var ranged = GetComponent<RangeWeapon>();
+			if (ranged && ranged.ObjectToSpawn)
 			{
-				var dummy = objectToSpawn;
-				objectToSpawn = GetComponent<RangeWeapon>().ObjectToSpawn; 
-				GetComponent<RangeWeapon>().ObjectToSpawn = dummy;
+				(objectToSpawn, ranged.ObjectToSpawn) = (ranged.ObjectToSpawn, objectToSpawn);
 			}
 		}
 

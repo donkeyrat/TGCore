@@ -474,6 +474,7 @@
     <Compile Include="Library\FollowTransformWithDrag.cs" />
     <Compile Include="Library\FreezeSelf.cs" />
     <Compile Include="Library\HoldingHandlerMulti.cs" />
+    <Compile Include="Library\IKLeg.cs" />
     <Compile Include="Library\LerpAnimationMultiplier.cs" />
     <Compile Include="Library\LineWidthOverTime.cs" />
     <Compile Include="Library\Revive.cs" />

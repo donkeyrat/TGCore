@@ -22,7 +22,7 @@ namespace TGCore
 
 		public static T SetField<T>(this T self, string name, object value) where T : class
 		{
-			FieldInfo field = typeof(T).GetField(name, (BindingFlags)(-1));
+			var field = typeof(T).GetField(name, (BindingFlags)(-1));
 			if (field != null)
 			{
 				field.SetValue(self, value);
@@ -32,7 +32,7 @@ namespace TGCore
 
 		public static object GetField<T>(this T self, string name) where T : class
 		{
-			FieldInfo field = typeof(T).GetField(name, (BindingFlags)(-1));
+			var field = typeof(T).GetField(name, (BindingFlags)(-1));
 			if (field != null)
 			{
 				return field.GetValue(self);
@@ -42,7 +42,7 @@ namespace TGCore
 		
 		public static string DeepString(this GameObject self)
 		{
-			string final = "\nGameObject '" + self.name + "':\n{\n\tComponents:\n\t{\n";
+			var final = "\nGameObject '" + self.name + "':\n{\n\tComponents:\n\t{\n";
 			final += String.Concat(from Component component in self.GetComponents<Component>() select ("\t\t" + component.GetType().Name + "\n"));
 			final += "\t}\n";
 			if (self.transform.childCount > 0)
@@ -57,7 +57,7 @@ namespace TGCore
 
 		public static T DeepCopyOf<T>(this T self, T from) where T : class
 		{
-			foreach (FieldInfo fieldInfo in typeof(T).GetFields((BindingFlags)(-1)))
+			foreach (var fieldInfo in typeof(T).GetFields((BindingFlags)(-1)))
 			{
 				try
 				{
@@ -67,7 +67,7 @@ namespace TGCore
 				{
 				}
 			}
-			foreach (PropertyInfo propertyInfo in typeof(T).GetProperties((BindingFlags)(-1)))
+			foreach (var propertyInfo in typeof(T).GetProperties((BindingFlags)(-1)))
 			{
 				if (propertyInfo.CanWrite && propertyInfo.CanRead)
 				{
