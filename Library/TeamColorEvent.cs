@@ -11,14 +11,27 @@ namespace TGCore.Library
             if (goOnStart) Go();
         }
 
-        public void Go() 
+        public void Go()
         {
-            if (GetComponent<TeamHolder>() && GetComponent<TeamHolder>().team == Team.Red) redTeamEvent.Invoke();
-            else if (GetComponent<TeamHolder>() && GetComponent<TeamHolder>().team == Team.Blue) blueTeamEvent.Invoke();
-            else if (GetComponentInParent<TeamHolder>() && GetComponentInParent<TeamHolder>().team == Team.Red) redTeamEvent.Invoke();
-            else if (GetComponentInParent<TeamHolder>() && GetComponentInParent<TeamHolder>().team == Team.Blue) blueTeamEvent.Invoke();
-            else if (transform.root.GetComponent<Unit>() && transform.root.GetComponent<Unit>().Team == Team.Red) redTeamEvent.Invoke();
-            else if (transform.root.GetComponent<Unit>() && transform.root.GetComponent<Unit>().Team == Team.Blue) blueTeamEvent.Invoke();
+            var teamHolder = GetComponentInChildren<TeamHolder>();
+            var parentTeamHolder = GetComponentInParent<TeamHolder>();
+            var rootUnit = transform.root.GetComponent<Unit>();
+
+            if (teamHolder)
+            {
+                if (teamHolder.team == Team.Red) redTeamEvent.Invoke();
+                else blueTeamEvent.Invoke();
+            }
+            else if (parentTeamHolder)
+            {
+                if (parentTeamHolder.team == Team.Red) redTeamEvent.Invoke();
+                else blueTeamEvent.Invoke();
+            }
+            else if (rootUnit)
+            {
+                if (rootUnit.Team == Team.Red) redTeamEvent.Invoke();
+                else blueTeamEvent.Invoke();
+            }
         }
 
         public bool goOnStart;

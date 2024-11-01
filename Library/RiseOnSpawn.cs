@@ -8,21 +8,21 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownData = GetComponent<Unit>().data;
+            OwnData = GetComponent<Unit>().data;
             StartCoroutine(DoRise());
         }
 
         private IEnumerator DoRise()
         {
-            ownData.mainRig.isKinematic = true;
+            OwnData.mainRig.isKinematic = true;
             yield return new WaitForSeconds(startDelay);
             
             var t = 0f;
             while (t < time)
             {
-                foreach (var rig in ownData.allRigs.AllRigs)
+                foreach (var rig in OwnData.allRigs.AllRigs)
                 {
-                    if (setRigsKinematic && (setArmsKinematic || (rig.transform != ownData.leftArm && rig.transform != ownData.rightArm && rig.transform != ownData.leftHand && rig.transform != ownData.rightHand)))
+                    if (setRigsKinematic && (setArmsKinematic || (rig.transform != OwnData.leftArm && rig.transform != OwnData.rightArm && rig.transform != OwnData.leftHand && rig.transform != OwnData.rightHand)))
                     {
                         rig.isKinematic = true;
                     }
@@ -34,13 +34,13 @@ namespace TGCore.Library
                 yield return null;
             }
 
-            foreach (var rig in ownData.allRigs.AllRigs)
+            foreach (var rig in OwnData.allRigs.AllRigs)
             {
                 rig.isKinematic = false;
             }
         }
         
-        private DataHandler ownData;
+        private DataHandler OwnData;
 
         public float startDelay;
 

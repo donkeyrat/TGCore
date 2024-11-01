@@ -7,35 +7,35 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            rangeWeapon = GetComponent<RangeWeapon>();
+            RangeWeapon = GetComponent<RangeWeapon>();
             
-            spawned = Instantiate(GetComponent<ProjectileLauncher>().objectToSpawn, pivot.position, pivot.rotation, pivot);
+            Spawned = Instantiate(GetComponent<ProjectileLauncher>().objectToSpawn, pivot.position, pivot.rotation, pivot);
 
-            var idle = spawned.GetComponentInChildren<ArrowIdlePosition>();
-            if (idle) spawned.transform.localPosition = idle.transform.localPosition;
-            spawned.transform.localPosition += offset;
+            var idle = Spawned.GetComponentInChildren<ArrowIdlePosition>();
+            if (idle) Spawned.transform.localPosition = idle.transform.localPosition;
+            Spawned.transform.localPosition += offset;
             
-            if (rangeWeapon && rangeWeapon.connectedData != null)
+            if (RangeWeapon && RangeWeapon.connectedData != null)
             {
-                var componentsInChildren = spawned.GetComponentsInChildren<Renderer>(); 
-                rangeWeapon.connectedData.unit.AddRenderersToShowHide(componentsInChildren, false);
+                var componentsInChildren = Spawned.GetComponentsInChildren<Renderer>(); 
+                RangeWeapon.connectedData.unit.AddRenderersToShowHide(componentsInChildren, false);
             }
 
-            foreach (var rig in spawned.GetComponentsInChildren<Rigidbody>())
+            foreach (var rig in Spawned.GetComponentsInChildren<Rigidbody>())
             {
                 rig.isKinematic = true;
                 if (rig.GetComponent<Joint>()) Destroy(rig.GetComponent<Joint>());
                 Destroy(rig);
             }
             
-            foreach (var mono in spawned.GetComponentsInChildren<MonoBehaviour>()) 
+            foreach (var mono in Spawned.GetComponentsInChildren<MonoBehaviour>()) 
             {
                 if (!(mono is SetTeamColorOnStart) && !(mono is TeamColor)) Destroy(mono);
             }
             
-            spawned.transform.localScale = Vector3.one;
+            Spawned.transform.localScale = Vector3.one;
             
-            foreach (var particle in spawned.GetComponentsInChildren<ParticleSystem>()) 
+            foreach (var particle in Spawned.GetComponentsInChildren<ParticleSystem>()) 
             {
                 var idleParticle = particle.GetComponent<IdleBowParticle>();
                 if (idleParticle) particle.Play();
@@ -43,9 +43,9 @@ namespace TGCore.Library
             }
         }
 
-        private GameObject spawned;
+        private GameObject Spawned;
 
-        private RangeWeapon rangeWeapon;
+        private RangeWeapon RangeWeapon;
 
         public Transform pivot;
 

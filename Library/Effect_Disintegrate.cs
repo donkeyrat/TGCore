@@ -11,14 +11,14 @@ namespace TGCore.Library
     {
         private void Awake()
         {
-            ownUnit = transform.root.GetComponent<Unit>();
-            colorHandler = ownUnit.data.GetComponent<UnitColorHandler>();
+            OwnUnit = transform.root.GetComponent<Unit>();
+            ColorHandler = OwnUnit.data.GetComponent<UnitColorHandler>();
         }
         
         public override void DoEffect()
         {
-            ownUnit = transform.root.GetComponent<Unit>();
-            colorHandler = ownUnit.data.GetComponent<UnitColorHandler>();
+            OwnUnit = transform.root.GetComponent<Unit>();
+            ColorHandler = OwnUnit.data.GetComponent<UnitColorHandler>();
             
             StartCoroutine(AddEffect());
         }
@@ -32,39 +32,39 @@ namespace TGCore.Library
         {
             yield return new WaitForSeconds(effectDelay);
             
-            if (!ownUnit) yield break;
+            if (!OwnUnit) yield break;
             
-            ownUnit.data.healthHandler.TakeDamage(damage, Vector3.zero);
+            OwnUnit.data.healthHandler.TakeDamage(damage, Vector3.zero);
             
-            if (ownUnit.data.Dead || alwaysDestroy) StartCoroutine(DestroyUnit());
+            if (OwnUnit.data.Dead || alwaysDestroy) StartCoroutine(DestroyUnit());
         }
 
         private IEnumerator DestroyUnit()
         {
-            if (!ownUnit || destroying) yield break;
-            destroying = true;
+            if (!OwnUnit || Destroying) yield break;
+            Destroying = true;
             
             destroyEvent.Invoke();
                 
             yield return new WaitForSeconds(destroyDelay);
                 
-            colorHandler.SetMaterial(mat);
+            ColorHandler.SetMaterial(mat);
 
             if (destroyRoot)
             {
-                if (ownUnit && ownUnit.GetComponent<GameObjectEntity>() && World.Active.GetOrCreateManager<TeamSystem>().GetTeamUnits(ownUnit.Team).Contains(ownUnit))
+                if (OwnUnit && OwnUnit.GetComponent<GameObjectEntity>() && World.Active.GetOrCreateManager<TeamSystem>().GetTeamUnits(OwnUnit.Team).Contains(OwnUnit))
                 {
-                    World.Active.GetOrCreateManager<TeamSystem>().RemoveEntity(ownUnit.GetComponent<GameObjectEntity>().Entity, ownUnit.Team, ownUnit);
+                    World.Active.GetOrCreateManager<TeamSystem>().RemoveEntity(OwnUnit.GetComponent<GameObjectEntity>().Entity, OwnUnit.Team, OwnUnit);
                 }
-                ownUnit.DestroyUnit();
+                OwnUnit.DestroyUnit();
             }
         }
 
-        private Unit ownUnit;
+        private Unit OwnUnit;
 
-        private UnitColorHandler colorHandler;
+        private UnitColorHandler ColorHandler;
 
-        private bool destroying;
+        private bool Destroying;
 
         public float damage;
 

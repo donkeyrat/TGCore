@@ -7,9 +7,9 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            weapon = GetComponent<TeamHolder>().spawnerWeapon;
-            stick = GetComponent<ProjectileStick>();
-            returnObject = weapon.transform.FindChildRecursive(objectToReturnTo);
+            Weapon = GetComponent<TeamHolder>().spawnerWeapon;
+            Stick = GetComponent<ProjectileStick>();
+            ReturnObject = Weapon.transform.FindChildRecursive(objectToReturnTo);
         }
         
         public void Return()
@@ -19,31 +19,30 @@ namespace TGCore.Library
 
         private IEnumerator DoReturn()
         {
-            if (stick) Destroy(stick);
+            if (Stick) Destroy(Stick);
             
             var t = 0f;
             var beginPosition = transform.position;
             var beginRotation = transform.rotation;
-            var endPosition = returnObject.position + returnObject.TransformPoint(offset);
             while (t < 1f)
             {
-                transform.position = Vector3.Lerp(beginPosition, endPosition, t);
-                transform.rotation = Quaternion.Lerp(beginRotation, returnObject.rotation, t);
+                transform.position = Vector3.Lerp(beginPosition, ReturnObject.TransformPoint(offset), t);
+                transform.rotation = Quaternion.Lerp(beginRotation, ReturnObject.rotation, t);
                 
                 t += Time.deltaTime * speed;
                 yield return null;
             }
 
-            var delay = weapon.GetComponent<DelayEvent>();
+            var delay = Weapon.GetComponent<DelayEvent>();
             if (delay) delay.Go();
             Destroy(gameObject);
         }
 
-        private Transform returnObject;
+        private Transform ReturnObject;
 
-        private GameObject weapon;
+        private GameObject Weapon;
 
-        private ProjectileStick stick;
+        private ProjectileStick Stick;
 
         public string objectToReturnTo;
         public Vector3 offset;

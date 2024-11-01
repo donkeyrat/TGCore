@@ -7,9 +7,9 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            rangeWeapon = GetComponent<RangeWeapon>();
-            launcher = GetComponent<ProjectileLauncher>();
-            projectiles = projectilesToCycle;
+            RangeWeapon = GetComponent<RangeWeapon>();
+            Launcher = GetComponent<ProjectileLauncher>();
+            Projectiles = projectilesToCycle;
         }
         
         public void Switch()
@@ -18,44 +18,44 @@ namespace TGCore.Library
             {
                 case CycleMode.Random:
                 {
-                    var chosenProjectile = projectiles[Random.Range(0, projectiles.Count)];
-                    if (rangeWeapon) rangeWeapon.ObjectToSpawn = chosenProjectile;
-                    if (launcher) launcher.objectToSpawn = chosenProjectile;
+                    var chosenProjectile = Projectiles[Random.Range(0, Projectiles.Count)];
+                    if (RangeWeapon) RangeWeapon.ObjectToSpawn = chosenProjectile;
+                    if (Launcher) Launcher.objectToSpawn = chosenProjectile;
                     
                     break;
                 }
                 case CycleMode.BiasedRandom:
                 {
-                    var chosenIndex = Random.Range(0, projectiles.Count);
-                    if (rangeWeapon) rangeWeapon.ObjectToSpawn = projectiles[chosenIndex];
-                    if (launcher) launcher.objectToSpawn = projectiles[chosenIndex];
+                    var chosenIndex = Random.Range(0, Projectiles.Count);
+                    if (RangeWeapon) RangeWeapon.ObjectToSpawn = Projectiles[chosenIndex];
+                    if (Launcher) Launcher.objectToSpawn = Projectiles[chosenIndex];
 
-                    var lastRemovedProjectile = projectilesToCycle[lastRemovedIndex];
+                    var lastRemovedProjectile = projectilesToCycle[LastRemovedIndex];
                     
-                    if (!projectiles.Contains(lastRemovedProjectile)) projectiles.Add(lastRemovedProjectile);
-                    lastRemovedIndex = chosenIndex;
-                    projectiles.Remove(projectilesToCycle[chosenIndex]);
+                    if (!Projectiles.Contains(lastRemovedProjectile)) Projectiles.Add(lastRemovedProjectile);
+                    LastRemovedIndex = chosenIndex;
+                    Projectiles.Remove(projectilesToCycle[chosenIndex]);
                     
                     break;
                 }
                 case CycleMode.Cycle:
                 {
-                    if (rangeWeapon) rangeWeapon.ObjectToSpawn = projectiles[currentIndex];
-                    if (launcher) launcher.objectToSpawn = projectiles[currentIndex];
+                    if (RangeWeapon) RangeWeapon.ObjectToSpawn = Projectiles[CurrentIndex];
+                    if (Launcher) Launcher.objectToSpawn = Projectiles[CurrentIndex];
                     
-                    currentIndex++;
-                    if (currentIndex == projectiles.Count) currentIndex = 0;
+                    CurrentIndex++;
+                    if (CurrentIndex == Projectiles.Count) CurrentIndex = 0;
                     
                     break;
                 }
             }
         }
 
-        private int currentIndex;
-        private int lastRemovedIndex;
-        private RangeWeapon rangeWeapon;
-        private ProjectileLauncher launcher;
-        private List<GameObject> projectiles;
+        private int CurrentIndex;
+        private int LastRemovedIndex;
+        private RangeWeapon RangeWeapon;
+        private ProjectileLauncher Launcher;
+        private List<GameObject> Projectiles;
 
         public List<GameObject> projectilesToCycle;
 

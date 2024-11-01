@@ -10,12 +10,12 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownUnit = transform.root.GetComponent<Unit>();
+            OwnUnit = transform.root.GetComponent<Unit>();
         }
         
         public void Go() 
         {
-            AddEffect(ownUnit.data.targetData);
+            AddEffect(OwnUnit.data.targetData);
         }
         
         public void GoWithRandomTarget(float radius) 
@@ -23,7 +23,7 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, radius, Vector3.up, 0.1f, LayerMask.GetMask("MainRig"));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != ownUnit.Team)
+                .Where(x => x && !x.data.Dead && x.Team != OwnUnit.Team)
                 .Distinct()
                 .ToArray();
             
@@ -32,14 +32,14 @@ namespace TGCore.Library
 
         public void AddEffect(DataHandler targetData)
         {
-            if (!ownUnit || !targetData || targetData.Dead) return;
+            if (!OwnUnit || !targetData || targetData.Dead) return;
             
             var existingEffect = UnitEffectBase.AddEffectToTarget(targetData.unit.gameObject, effectPrefab);
             if (!existingEffect) 
             {
                 var newEffect = Instantiate(effectPrefab.gameObject, targetData.unit.transform);
                 newEffect.transform.position = targetData.unit.transform.position;
-                newEffect.transform.rotation = Quaternion.LookRotation(targetData.mainRig.position - ownUnit.data.mainRig.position);
+                newEffect.transform.rotation = Quaternion.LookRotation(targetData.mainRig.position - OwnUnit.data.mainRig.position);
                     
                 TeamHolder.AddTeamHolder(newEffect, transform.root.gameObject);
                     
@@ -48,12 +48,12 @@ namespace TGCore.Library
             }
             else if (!onlyOnce) 
             {
-                existingEffect.transform.rotation = Quaternion.LookRotation(targetData.mainRig.position - ownUnit.data.mainRig.position);
+                existingEffect.transform.rotation = Quaternion.LookRotation(targetData.mainRig.position - OwnUnit.data.mainRig.position);
                 existingEffect.Ping();
             }
         }
 
-        private Unit ownUnit;
+        private Unit OwnUnit;
         
         public UnitEffectBase effectPrefab;
 

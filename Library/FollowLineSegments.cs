@@ -8,26 +8,26 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            line = GetComponent<LineRenderer>();
+            Line = GetComponent<LineRenderer>();
         }
         
         private void Update()
         {
             var followerIndex = 0;
-            for (var i = 0; i < line.positionCount; i++)
+            for (var i = 0; i < Line.positionCount; i++)
             {
-                if (i + 1 == line.positionCount / followers.Count * (followerIndex + 1))
+                if (i + 1 == Line.positionCount / followers.Count * (followerIndex + 1))
                 {
-                    var pos = line.GetPosition(i);
+                    var pos = Line.GetPosition(i);
                     followers[followerIndex].transform.position = pos;
                     followers[followerIndex].transform.rotation =
-                        Quaternion.LookRotation(line.GetPosition(i - 1) - line.GetPosition(i));
+                        Quaternion.LookRotation(Line.GetPosition(i - 1) - Line.GetPosition(i));
                     followerIndex++;
                 }
             }
         }
         
-        private LineRenderer line;
+        private LineRenderer Line;
         
         public List<GameObject> followers;
     }

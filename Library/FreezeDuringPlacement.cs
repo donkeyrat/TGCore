@@ -8,23 +8,23 @@ namespace TGCore.Library
         private void Start()
         {
             GameStateManager = ServiceLocator.GetService<GameStateManager>();
-            rig = GetComponent<Rigidbody>();
+            Rig = GetComponent<Rigidbody>();
         }
         
         private void Update()
         {
-            if (!rig.isKinematic && GameStateManager.GameState == GameState.PlacementState)
+            if (!Rig.isKinematic && GameStateManager.GameState == GameState.PlacementState)
             {
-                rig.isKinematic = true;
+                Rig.isKinematic = true;
             }
             else if (GameStateManager.GameState != GameState.PlacementState)
             {
-                rig.isKinematic = false;
+                Rig.isKinematic = false;
                 Destroy(this);
             }
         }
 
         private GameStateManager GameStateManager;
-        private Rigidbody rig;
+        private Rigidbody Rig;
     }
 }

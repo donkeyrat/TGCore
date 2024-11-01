@@ -7,12 +7,12 @@ namespace TGCore.Library
     {
         public void Switch()
         {
-            shootPosition.transform.localPosition = positions[currentIndex];
-            currentIndex++;
-            if (currentIndex == positions.Count) currentIndex = 0;
+            shootPosition.transform.localPosition = positions[CurrentIndex];
+            CurrentIndex++;
+            if (CurrentIndex == positions.Count) CurrentIndex = 0;
         }
 
-        private int currentIndex;
+        private int CurrentIndex;
 
         public Transform shootPosition;
 

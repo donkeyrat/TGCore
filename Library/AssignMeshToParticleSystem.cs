@@ -8,35 +8,35 @@ namespace TGCore.Library
 
 		private void Start()
 		{
-			part = GetComponent<ParticleSystem>();
+			Part = GetComponent<ParticleSystem>();
 
 			switch (meshType)
 			{
 				case MeshType.MeshRenderer:
 				{
-					allMeshRenderers = transform.root.GetComponentsInChildren<MeshRenderer>();
-					foreach (var renderer in allMeshRenderers)
+					AllMeshRenderers = transform.root.GetComponentsInChildren<MeshRenderer>();
+					foreach (var renderer in AllMeshRenderers)
 					{
-						if (renderer.CompareTag("UnitMesh") && !meshAssigned)
+						if (renderer.CompareTag("UnitMesh") && !MeshAssigned)
 						{
-							meshRenderer = renderer;
-							meshAssigned = true;
+							MeshRenderer = renderer;
+							MeshAssigned = true;
 						}
 						if (disableMesh) renderer.enabled = false;
 					}
-					if (meshRenderer)
+					if (MeshRenderer)
 					{
-						var shape = part.shape;
-						shape.meshRenderer = meshRenderer;
+						var shape = Part.shape;
+						shape.meshRenderer = MeshRenderer;
 					
 						findEvent.Invoke();
-						if (play) part.Play();
+						if (play) Part.Play();
 					}
 				
 					if (!disableParticles) return;
 				
-					particleSystems = transform.root.GetComponentsInChildren<ParticleSystem>();
-					foreach (var particle in particleSystems)
+					ParticleSystems = transform.root.GetComponentsInChildren<ParticleSystem>();
+					foreach (var particle in ParticleSystems)
 					{
 						if (!particle.CompareTag("DontRemove")) particle.Stop();
 					}
@@ -45,22 +45,22 @@ namespace TGCore.Library
 				}
 				case MeshType.SkinnedMeshRenderer:
 				{
-					allSkinnedMeshRenderers = transform.root.GetComponentsInChildren<SkinnedMeshRenderer>();
-					foreach (var renderer in allSkinnedMeshRenderers)
+					AllSkinnedMeshRenderers = transform.root.GetComponentsInChildren<SkinnedMeshRenderer>();
+					foreach (var renderer in AllSkinnedMeshRenderers)
 					{
 						if (renderer.CompareTag("UnitMesh"))
 						{
-							skinnedMeshRend = renderer;
+							SkinnedMeshRend = renderer;
 							break;
 						}
 					}
-					if (skinnedMeshRend)
+					if (SkinnedMeshRend)
 					{
 						var shape = GetComponent<ParticleSystem>().shape;
-						shape.skinnedMeshRenderer = skinnedMeshRend;
+						shape.skinnedMeshRenderer = SkinnedMeshRend;
 					
 						findEvent.Invoke();
-						if (play) part.Play();
+						if (play) Part.Play();
 					}
 
 					break;
@@ -68,23 +68,23 @@ namespace TGCore.Library
 				case MeshType.NonUnitMeshRenderer:
 				default:
 				{
-					allMeshRenderers = transform.root.GetComponentsInChildren<MeshRenderer>();
-					foreach (var renderer in allMeshRenderers)
+					AllMeshRenderers = transform.root.GetComponentsInChildren<MeshRenderer>();
+					foreach (var renderer in AllMeshRenderers)
 					{
-						if (!meshAssigned)
+						if (!MeshAssigned)
 						{
-							meshRenderer = renderer;
-							meshAssigned = true;
+							MeshRenderer = renderer;
+							MeshAssigned = true;
 						}
 						if (disableMesh) renderer.enabled = false;
 					}
-					if (meshRenderer)
+					if (MeshRenderer)
 					{
-						var shape = part.shape;
-						shape.meshRenderer = meshRenderer;
+						var shape = Part.shape;
+						shape.meshRenderer = MeshRenderer;
 					
 						findEvent.Invoke();
-						if (play) part.Play();
+						if (play) Part.Play();
 					}
 
 					break;
@@ -92,13 +92,13 @@ namespace TGCore.Library
 			}
 		}
 		
-		private MeshRenderer[] allMeshRenderers;
-		private MeshRenderer meshRenderer;
-		private SkinnedMeshRenderer[] allSkinnedMeshRenderers;
-		private SkinnedMeshRenderer skinnedMeshRend;
-		private ParticleSystem[] particleSystems;
-		private ParticleSystem part;
-		private bool meshAssigned;
+		private MeshRenderer[] AllMeshRenderers;
+		private MeshRenderer MeshRenderer;
+		private SkinnedMeshRenderer[] AllSkinnedMeshRenderers;
+		private SkinnedMeshRenderer SkinnedMeshRend;
+		private ParticleSystem[] ParticleSystems;
+		private ParticleSystem Part;
+		private bool MeshAssigned;
 		
 		public enum MeshType
 		{

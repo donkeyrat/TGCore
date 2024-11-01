@@ -7,51 +7,51 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownData = transform.root.GetComponent<Unit>().data;
+            OwnData = transform.root.GetComponent<Unit>().data;
             
             switch (bodyPart)
             {
                 case BodyPart.Head:
-                    chosenPart = ownData.head;
+                    ChosenPart = OwnData.head;
                     break;
                 case BodyPart.Torso:
-                    chosenPart = ownData.torso;
+                    ChosenPart = OwnData.torso;
                     break;
                 case BodyPart.Hip:
-                    chosenPart = ownData.hip.transform;
+                    ChosenPart = OwnData.hip.transform;
                     break;
                 case BodyPart.ArmLeft:
-                    chosenPart = ownData.leftArm;
+                    ChosenPart = OwnData.leftArm;
                     break;
                 case BodyPart.ArmRight:
-                    chosenPart = ownData.rightArm;
+                    ChosenPart = OwnData.rightArm;
                     break;
                 case BodyPart.ElbowLeft:
-                    chosenPart = ownData.leftHand;
+                    ChosenPart = OwnData.leftHand;
                     break;
                 case BodyPart.ElbowRight:
-                    chosenPart = ownData.rightHand;
+                    ChosenPart = OwnData.rightHand;
                     break;
                 case BodyPart.LegLeft:
-                    chosenPart = ownData.legLeft;
+                    ChosenPart = OwnData.legLeft;
                     break;
                 case BodyPart.LegRight:
-                    chosenPart = ownData.legRight;
+                    ChosenPart = OwnData.legRight;
                     break;
                 case BodyPart.KneeLeft:
-                    chosenPart = ownData.footLeft;
+                    ChosenPart = OwnData.footLeft;
                     break;
                 case BodyPart.KneeRight:
-                    chosenPart = ownData.footRight;
+                    ChosenPart = OwnData.footRight;
                     break;
             }
         }
 
         public void Go()
         {
-            if (!chosenPart) return;
+            if (!ChosenPart) return;
             
-            var animation = chosenPart.GetComponentInChildren<CodeAnimation>();
+            var animation = ChosenPart.GetComponentInChildren<CodeAnimation>();
             switch (animationToPlay)
             {
                 case AnimationType.In:
@@ -68,10 +68,18 @@ namespace TGCore.Library
                     break;
             }
         }
+        
+        public void GoUnityAnimation()
+        {
+            if (!ChosenPart) return;
+            
+            var animation = ChosenPart.GetComponentInChildren<Animator>();
+            animation.Play(animationName);
+        }
 
-        private DataHandler ownData;
+        private DataHandler OwnData;
 
-        private Transform chosenPart;
+        private Transform ChosenPart;
         
         public enum BodyPart
         {
@@ -97,6 +105,11 @@ namespace TGCore.Library
 
         public BodyPart bodyPart;
         
+        [Header("Code Animation")]
         public AnimationType animationToPlay;
+        
+        [Header("Unity Animation")]
+        public string animationName;
+        
     }
 }

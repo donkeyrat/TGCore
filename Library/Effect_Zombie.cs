@@ -16,32 +16,32 @@ namespace TGCore.Library
     {
         private void Awake()
         {
-            unit = transform.root.GetComponent<Unit>();
+            Unit = transform.root.GetComponent<Unit>();
         }
         
         public override void DoEffect()
         {
-            unit = transform.root.GetComponent<Unit>();
+            Unit = transform.root.GetComponent<Unit>();
             
-            if (unit.holdingHandler)
+            if (Unit.holdingHandler)
             {
-                weapon1 = unit.holdingHandler.rightObject ? unit.holdingHandler.rightObject.gameObject : null;
-                weapon2 = unit.holdingHandler.leftObject ? unit.holdingHandler.leftObject.gameObject : null;
+                Weapon1 = Unit.holdingHandler.rightObject ? Unit.holdingHandler.rightObject.gameObject : null;
+                Weapon2 = Unit.holdingHandler.leftObject ? Unit.holdingHandler.leftObject.gameObject : null;
                 if (zombieType != ZombificationType.Virus)
                 {
-                    if (weapon1 && weapon1.GetComponent<Holdable>()) weapon1.GetComponent<Holdable>().ignoreDissarm = true;
-                    if (weapon2 && weapon2.GetComponent<Holdable>()) weapon2.GetComponent<Holdable>().ignoreDissarm = true;
+                    if (Weapon1 && Weapon1.GetComponent<Holdable>()) Weapon1.GetComponent<Holdable>().ignoreDissarm = true;
+                    if (Weapon2 && Weapon2.GetComponent<Holdable>()) Weapon2.GetComponent<Holdable>().ignoreDissarm = true;
                 }
             }
-            var effect = unit.GetComponentsInChildren<UnitEffectBase>().ToList().Find(x => x.effectID == 1984);
-            if ((effect && effect != this) || unit.unitType == Unit.UnitType.Warmachine)
+            var effect = Unit.GetComponentsInChildren<UnitEffectBase>().ToList().Find(x => x.effectID == 1984);
+            if ((effect && effect != this) || Unit.unitType == Unit.UnitType.Warmachine)
             {
                 Destroy(gameObject);
-                unit.data.healthHandler.RemoveDieAction(Revive);
+                Unit.data.healthHandler.RemoveDieAction(Revive);
             }
             else
             {
-                unit.data.healthHandler.AddDieAction(Revive);
+                Unit.data.healthHandler.AddDieAction(Revive);
             }
             
             ApplyEffect();
@@ -58,16 +58,16 @@ namespace TGCore.Library
 
         public void ApplyEffect()
         {
-            if (done || !unit) return;
+            if (Done || !Unit) return;
             
-            currentProgress += Mathf.Clamp(progressToAdd / unit.data.health, 0f, 1f);
+            CurrentProgress += Mathf.Clamp(progressToAdd / Unit.data.health, 0f, 1f);
             if (zombieType != ZombificationType.Support) AddLerpProgress();
             else StartCoroutine(DoZombieChecks());
         }
     
         public void AddLerpProgress()
         {
-            if (done && zombieType != ZombificationType.Support) return;
+            if (Done && zombieType != ZombificationType.Support) return;
             
             StopCoroutine(DoLerp());
             StartCoroutine(DoLerp());
@@ -75,14 +75,14 @@ namespace TGCore.Library
     
         private IEnumerator DoLerp()
         {
-            if (done && zombieType != ZombificationType.Support) yield break;
+            if (Done && zombieType != ZombificationType.Support) yield break;
             
             var c = 0f;
-            var startProgress = lerpProgress;
+            var startProgress = LerpProgress;
             while (c < 1f)
             {
                 c += Mathf.Clamp(Time.deltaTime * lerpSpeed, 0f, 1f);
-                lerpProgress = Mathf.Lerp(startProgress, currentProgress, c);
+                LerpProgress = Mathf.Lerp(startProgress, CurrentProgress, c);
                 yield return null;
             }
     
@@ -91,75 +91,75 @@ namespace TGCore.Library
     
         private IEnumerator DoZombieChecks()
         {
-            if (done) yield break;
+            if (Done) yield break;
 
             yield return new WaitForSeconds(0.05f);
             
-            if (done) yield break;
+            if (Done) yield break;
     
-            if (currentProgress >= 0.5f)
+            if (CurrentProgress >= 0.5f)
             {
-                unit.data.healthHandler.willBeRewived = true;
-                if (unit.GetComponentInChildren<AddRigidbodyOnDeath>())
-                    foreach (var script in unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
+                Unit.data.healthHandler.willBeRewived = true;
+                if (Unit.GetComponentInChildren<AddRigidbodyOnDeath>())
+                    foreach (var script in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
                     {
-                        unit.data.healthHandler.RemoveDieAction(script.Die); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Die); 
                         Destroy(script);
                     }
-                if (unit.GetComponentInChildren<SinkOnDeath>())
-                    foreach (var script in unit.GetComponentsInChildren<SinkOnDeath>())
+                if (Unit.GetComponentInChildren<SinkOnDeath>())
+                    foreach (var script in Unit.GetComponentsInChildren<SinkOnDeath>())
                     {
-                        unit.data.healthHandler.RemoveDieAction(script.Sink); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Sink); 
                         Destroy(script);
                     }
-                if (unit.GetComponentInChildren<RemoveJointsOnDeath>())
-                    foreach (var script in unit.GetComponentsInChildren<RemoveJointsOnDeath>())
+                if (Unit.GetComponentInChildren<RemoveJointsOnDeath>())
+                    foreach (var script in Unit.GetComponentsInChildren<RemoveJointsOnDeath>())
                     {
-                        unit.data.healthHandler.RemoveDieAction(script.Die); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Die); 
                         Destroy(script);
                     }
-                if (unit.GetComponentInChildren<DisableAllSkinnedClothes>())
-                    foreach (var script in unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
+                if (Unit.GetComponentInChildren<DisableAllSkinnedClothes>())
+                    foreach (var script in Unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
                     {
                         Destroy(script);
                     }
             }
     
-            if (currentProgress >= 1f && zombieType != ZombificationType.Support)
+            if (CurrentProgress >= 1f && zombieType != ZombificationType.Support)
             {
-                unit.data.healthHandler.TakeDamage(unit.data.maxHealth, Vector3.zero, unit, DamageType.Magic);
+                Unit.data.healthHandler.TakeDamage(Unit.data.maxHealth, Vector3.zero, Unit, DamageType.Magic);
             }
         }
     
         public void Revive()
         {
-            if (!done && unit.data.healthHandler.willBeRewived)
+            if (!Done && Unit.data.healthHandler.willBeRewived)
             {
-                done = true;
+                Done = true;
                 StartCoroutine(DoRevive());
             }
         }
     
         public IEnumerator DoRevive()
         {
-            ServiceLocator.GetService<GameModeService>().CurrentGameMode.OnUnitDied(unit);
+            ServiceLocator.GetService<GameModeService>().CurrentGameMode.OnUnitDied(Unit);
             
             Landfall.TABS.Team newTeam;
-            if (zombieType == ZombificationType.Support) newTeam = unit.data.team;
-            else newTeam = unit.data.team == Landfall.TABS.Team.Red ? Landfall.TABS.Team.Blue : Landfall.TABS.Team.Red;
-            unit.data.team = newTeam;
-            unit.Team = newTeam;
+            if (zombieType == ZombificationType.Support) newTeam = Unit.data.team;
+            else newTeam = Unit.data.team == Landfall.TABS.Team.Red ? Landfall.TABS.Team.Blue : Landfall.TABS.Team.Red;
+            Unit.data.team = newTeam;
+            Unit.Team = newTeam;
             
-            unit.targetingPriorityMultiplier = reviveTargetingPriority;
+            Unit.targetingPriorityMultiplier = reviveTargetingPriority;
             
-            var goe = unit.GetComponent<GameObjectEntity>();
+            var goe = Unit.GetComponent<GameObjectEntity>();
             goe.EntityManager.RemoveComponent<IsDead>(goe.Entity);
             goe.EntityManager.AddComponent(goe.Entity, ComponentType.Create<UnitTag>());
             goe.EntityManager.SetSharedComponentData(goe.Entity, new Landfall.TABS.AI.Components.Team
             {
-                Value = (int)unit.Team
+                Value = (int)Unit.Team
             });
-            World.Active.GetOrCreateManager<TeamSystem>().AddUnit(goe.Entity, unit.gameObject, unit.transform, unit.data.mainRig, unit.data, newTeam, unit, false);
+            World.Active.GetOrCreateManager<TeamSystem>().AddUnit(goe.Entity, Unit.gameObject, Unit.transform, Unit.data.mainRig, Unit.data, newTeam, Unit, false);
             
             if (zombieType == ZombificationType.Support) AddLerpProgress();
             
@@ -167,29 +167,29 @@ namespace TGCore.Library
             
             yield return new WaitForSeconds(reviveDelay);
     
-            unit.data.Dead = false;
-            unit.dead = false;
-            unit.data.hasBeenRevived = true;
-            unit.data.healthHandler.willBeRewived = false;
+            Unit.data.Dead = false;
+            Unit.dead = false;
+            Unit.data.hasBeenRevived = true;
+            Unit.data.healthHandler.willBeRewived = false;
     
-            unit.data.ragdollControl = 1f;
-            unit.data.muscleControl = 1f;
+            Unit.data.ragdollControl = 1f;
+            Unit.data.muscleControl = 1f;
     
-            unit.data.health = unit.data.maxHealth * reviveHealthMultiplier;
+            Unit.data.health = Unit.data.maxHealth * reviveHealthMultiplier;
     
             if (zombieType == ZombificationType.Virus)
             {
-                if (unit.holdingHandler)
+                if (Unit.holdingHandler)
                 {
-                    if (weapon1) weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
-                    if (weapon2) weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
-                    unit.holdingHandler.LetGoOfAll();
-                    unit.unitBlueprint.SetWeapon(unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Right, unit.data.mainRig.rotation, new List<GameObject>());
-                    unit.unitBlueprint.SetWeapon(unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Left, unit.data.mainRig.rotation, new List<GameObject>());
+                    if (Weapon1) Weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
+                    if (Weapon2) Weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
+                    Unit.holdingHandler.LetGoOfAll();
+                    Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
+                    Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
                 }
-                else if (unit.GetComponentInChildren<HoldingHandlerMulti>())
+                else if (Unit.GetComponentInChildren<HoldingHandlerMulti>())
                 {
-                    var multi = unit.GetComponentInChildren<HoldingHandlerMulti>();
+                    var multi = Unit.GetComponentInChildren<HoldingHandlerMulti>();
                     foreach (var w in multi.spawnedWeapons)
                     {
                         w.AddComponent<RemoveAfterSeconds>().shrink = true;
@@ -197,36 +197,36 @@ namespace TGCore.Library
                     multi.LetGoOfAll();
                     foreach (var left in multi.otherHands)
                     {
-                        multi.SetWeapon(left.gameObject, Instantiate(reviveWeapon, left.transform.position, left.transform.rotation, unit.transform));
+                        multi.SetWeapon(left.gameObject, Instantiate(reviveWeapon, left.transform.position, left.transform.rotation, Unit.transform));
                     }
                     foreach (var right in multi.mainHands)
                     {
-                        multi.SetWeapon(right.gameObject, Instantiate(reviveWeapon, right.transform.position, right.transform.rotation, unit.transform));
+                        multi.SetWeapon(right.gameObject, Instantiate(reviveWeapon, right.transform.position, right.transform.rotation, Unit.transform));
                     }
                 }
             }
             else
             {
-                if (weapon1 && weapon1.GetComponent<Holdable>()) weapon1.GetComponent<Holdable>().ignoreDissarm = false;
-                if (weapon2 && weapon2.GetComponent<Holdable>()) weapon2.GetComponent<Holdable>().ignoreDissarm = false;
+                if (Weapon1 && Weapon1.GetComponent<Holdable>()) Weapon1.GetComponent<Holdable>().ignoreDissarm = false;
+                if (Weapon2 && Weapon2.GetComponent<Holdable>()) Weapon2.GetComponent<Holdable>().ignoreDissarm = false;
             }
             
             foreach (var ability in reviveAbilities)
             {
-                Instantiate(ability, unit.transform.position, unit.transform.rotation, unit.transform);
+                Instantiate(ability, Unit.transform.position, Unit.transform.rotation, Unit.transform);
             }
             
-            if (unit.GetComponentInChildren<TeamColor>())
+            if (Unit.GetComponentInChildren<TeamColor>())
             {
-                foreach (var tc in unit.GetComponentsInChildren<TeamColor>())
+                foreach (var tc in Unit.GetComponentsInChildren<TeamColor>())
                 {
                     tc.SetTeamColor(newTeam);
                 }
             }
             
-            if (unit.data.GetComponent<StandingHandler>() && (unit.name.Contains("Humanoid") || unit.name.Contains("Stiffy") || unit.name.Contains("Blackbeard") || unit.name.Contains("Halfling")))
+            if (Unit.data.GetComponent<StandingHandler>() && (Unit.name.Contains("Humanoid") || Unit.name.Contains("Stiffy") || Unit.name.Contains("Blackbeard") || Unit.name.Contains("Halfling")))
             {
-                var ran = unit.data.gameObject.AddComponent<RandomCharacterStats>();
+                var ran = Unit.data.gameObject.AddComponent<RandomCharacterStats>();
                 ran.minStandingOffset = zombieStats.GetComponent<RandomCharacterStats>().minStandingOffset;
                 ran.maxStandingOffset = zombieStats.GetComponent<RandomCharacterStats>().maxStandingOffset;
                 ran.minMovement = zombieStats.GetComponent<RandomCharacterStats>().minMovement;
@@ -234,19 +234,19 @@ namespace TGCore.Library
                 ran.randomCurve = zombieStats.GetComponent<RandomCharacterStats>().randomCurve;
             }
             
-            unit.api.SetTargetingType(unit.unitBlueprint.TargetingComponent);
-            ServiceLocator.GetService<UnitHealthbars>().HandleUnitSpawned(unit);
-            unit.api.UpdateECSValues();
-            unit.InitializeUnit(newTeam);
+            Unit.api.SetTargetingType(Unit.unitBlueprint.TargetingComponent);
+            ServiceLocator.GetService<UnitHealthbars>().HandleUnitSpawned(Unit);
+            Unit.api.UpdateECSValues();
+            Unit.InitializeUnit(newTeam);
     
             reviveEvent.Invoke();
         }
         
         public void Update()
         {
-            if (unit)
+            if (Unit)
             {
-                unit.data.GetComponent<UnitColorHandler>().SetColor(color, lerpProgress);
+                Unit.data.GetComponent<UnitColorHandler>().SetColor(color, LerpProgress);
             }
         }
     
@@ -257,17 +257,17 @@ namespace TGCore.Library
             Support
         }
     
-        private Unit unit;
-        private GameObject weapon1;
-        private GameObject weapon2;
+        private Unit Unit;
+        private GameObject Weapon1;
+        private GameObject Weapon2;
     
-        private bool done;
+        private bool Done;
         
         [Header("Zombification Settings")]
         
         public ZombificationType zombieType;
         
-        private float currentProgress;
+        private float CurrentProgress;
     
         public float progressToAdd = 100f;
     
@@ -298,7 +298,7 @@ namespace TGCore.Library
         
         public UnitColorInstance color = new UnitColorInstance();
         
-        private float lerpProgress;
+        private float LerpProgress;
     
         public float lerpSpeed = 1f;
     }

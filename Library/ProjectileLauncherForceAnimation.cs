@@ -7,8 +7,8 @@ namespace TGCore.Library
 	{
 		public void Start()
 		{
-			rig = GetComponentInParent<Rigidbody>();
-			if (!data) data = GetComponent<Weapon>().connectedData;
+			Rig = GetComponentInParent<Rigidbody>();
+			if (!Data) Data = GetComponent<Weapon>().connectedData;
 		}
 
 		public override void DoEffect(Rigidbody target)
@@ -23,25 +23,25 @@ namespace TGCore.Library
 		{
 			if (upwardsModifier != 0f) position += Vector3.up * upwardsModifier;
 
-			var usedRig = new[] { rig };
+			var usedRig = new[] { Rig };
 
 			switch (animation.animationRig)
 			{
 				case SpellAnimation.AnimationRig.All:
-					usedRig = data.allRigs.AllRigs;
+					usedRig = Data.allRigs.AllRigs;
 					break;
 				case SpellAnimation.AnimationRig.Torso:
-					usedRig[0] = data.mainRig;
+					usedRig[0] = Data.mainRig;
 					break;
 				case SpellAnimation.AnimationRig.Hip:
-					usedRig[0] = data.hip;
+					usedRig[0] = Data.hip;
 					break;
 				case SpellAnimation.AnimationRig.This:
 					break;
 				case SpellAnimation.AnimationRig.ThisRig:
 					break;
 				default:
-					usedRig = data.allRigs.AllRigs;
+					usedRig = Data.allRigs.AllRigs;
 					break;
 			}
 
@@ -51,14 +51,14 @@ namespace TGCore.Library
 			
 			var t = animation.rigAnimationCurve.keys[animation.rigAnimationCurve.keys.Length - 1].time;
 			var c = 0f;
-			var asm = Mathf.Clamp(data.unit.attackSpeedMultiplier, 0f, 6f);
-			while (c < t && data.ragdollControl > 0.7f) 
+			var asm = Mathf.Clamp(Data.unit.attackSpeedMultiplier, 0f, 6f);
+			while (c < t && Data.ragdollControl > 0.7f) 
 			{
 				if (animation.setDirectionContinious && targetRig)
 				{
 					animationDirection = SetDirection(targetRig.position + Vector3.up * upwardsModifier, animation);
 				}
-				if (data.sinceGrounded < 0.3f) 
+				if (Data.sinceGrounded < 0.3f) 
 				{
 					int num;
 					for (var i = 0; i < usedRig.Length; i = num + 1) 
@@ -88,7 +88,7 @@ namespace TGCore.Library
 					vector = Vector3.forward;
 					break;
 				case RangeWeapon.SpawnRotation.CharacterForward:
-					vector = data.characterForwardObject.forward;
+					vector = Data.characterForwardObject.forward;
 					break;
 				default:
 					vector = Vector3.up;
@@ -107,8 +107,8 @@ namespace TGCore.Library
 
 		public float upwardsModifier;
 
-		private DataHandler data;
+		private DataHandler Data;
 
-		private Rigidbody rig;
+		private Rigidbody Rig;
 	}
 }

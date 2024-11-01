@@ -16,7 +16,7 @@ namespace TGCore.Library
 			All
 		}
 	
-		private MeleeWeaponMultiplierPoint multiplierPoint;
+		private MeleeWeaponMultiplierPoint MultiplierPoint;
 
 		public bool canDealDamage;
 	
@@ -48,41 +48,39 @@ namespace TGCore.Library
 	
 		public bool playSoundWhenHitNonRigidbodies = true;
 	
-		private readonly List<DataHandler> hitDatas = new List<DataHandler>();
+		private readonly List<DataHandler> HitDatas = new List<DataHandler>();
 	
-		private Holdable holdable;
+		private Holdable Holdable;
 	
-		private DataHandler connectedData;
+		private DataHandler ConnectedData;
 	
 		[HideInInspector]
 		public List<Rigidbody> protectedRigs = new List<Rigidbody>();
 	
-		private CollisionWeaponEffect[] meleeWeaponEffects;
+		private CollisionWeaponEffect[] MeleeWeaponEffects;
 	
 		public Weapon weapon;
-	
-		private TeamHolder teamHolder;
-	
+
 		public UnityEvent dealDamageEvent;
 	
-		private CollisionSound collisionSound;
+		private CollisionSound CollisionSound;
 	
 		public Damagable lastHitHealth;
 	
 		public float cooldown;
 	
-		private float sinceLastDamage;
+		private float SinceLastDamage;
 	
 		[HideInInspector]
 		public bool onlyCollideWithRigs;
 	
-		private Level myLevel;
+		private Level MyLevel;
 	
-		private Unit ownUnit;
+		private Unit OwnUnit;
 	
 		public CallEffectsOn callEffectsOn;
 	
-		private Rigidbody rig;
+		private Rigidbody Rig;
 	
 		private Action<Collision, float> CollisionAction;
 	
@@ -93,32 +91,48 @@ namespace TGCore.Library
 		protected override void Start()
 		{
 			base.Start();
-			collisionSound = GetComponent<CollisionSound>();
-			rig = GetComponent<Rigidbody>();
-			holdable = GetComponent<Holdable>();
-			teamHolder = GetComponent<TeamHolder>();
+			CollisionSound = GetComponent<CollisionSound>();
+			Rig = GetComponent<Rigidbody>();
+			Holdable = GetComponent<Holdable>();
+			OwnUnit = GetOwnUnit();
 			
 			if (!weapon && GetComponent<Weapon>()) weapon = GetComponent<Weapon>();
 			
-			meleeWeaponEffects = GetComponents<CollisionWeaponEffect>();
-			multiplierPoint = GetComponentInChildren<MeleeWeaponMultiplierPoint>();
+			MeleeWeaponEffects = GetComponents<CollisionWeaponEffect>();
+			MultiplierPoint = GetComponentInChildren<MeleeWeaponMultiplierPoint>();
 			if (weapon)
 			{
 				damage *= weapon.levelMultiplier;
 			}
-			myLevel = GetComponent<Level>();
-			if (myLevel)
+			MyLevel = GetComponent<Level>();
+			if (MyLevel)
 			{
-				onImpactForce *= Mathf.Pow(myLevel.level, 1.5f);
-				massCap *= Mathf.Pow(myLevel.level, 1.5f);
+				onImpactForce *= Mathf.Pow(MyLevel.level, 1.5f);
+				massCap *= Mathf.Pow(MyLevel.level, 1.5f);
 			}
+		}
+
+		private Unit GetOwnUnit()
+		{
+			var teamHolder = GetComponent<TeamHolder>();
+			if (teamHolder)
+			{
+				return teamHolder.spawner.transform.root.GetComponent<Unit>();
+			}
+
+			var rootUnit = transform.root.GetComponent<Unit>();
+			if (rootUnit) return rootUnit;
+
+			if (ConnectedData) return ConnectedData.unit;
+			
+			return null;
 		}
 	
 		public override void BatchedUpdate()
 		{
 			if (cooldown != 0f)
 			{
-				sinceLastDamage += Time.deltaTime;
+				SinceLastDamage += Time.deltaTime;
 			}
 		}
 	
@@ -134,15 +148,15 @@ namespace TGCore.Library
 				return;
 			}
 			var multiplier = 0f;
-			if (rig)
+			if (Rig)
 			{
 				if (collision.rigidbody)
 				{
-					multiplier = collision.impulse.magnitude / (rig.mass + 10f) * 0.3f;
+					multiplier = collision.impulse.magnitude / (Rig.mass + 10f) * 0.3f;
 				}
 				else
 				{
-					multiplier = collision.impulse.magnitude / rig.mass * 0.3f;
+					multiplier = collision.impulse.magnitude / Rig.mass * 0.3f;
 				}
 			}
 			multiplier *= impactMultiplier;
@@ -157,52 +171,52 @@ namespace TGCore.Library
 				{
 					DoCollisionEffects(collision.transform, collision);
 				}
-				if (collisionSound && playSoundWhenHitNonRigidbodies)
+				if (CollisionSound && playSoundWhenHitNonRigidbodies)
 				{
-					collisionSound.DoEffect(collision.transform, collision, multiplier);
+					CollisionSound.DoEffect(collision.transform, collision, multiplier);
 				}
 			}
 			
-			if (minVelocity != 0f && rig && rig.velocity.magnitude < minVelocity)
+			if (minVelocity != 0f && Rig && Rig.velocity.magnitude < minVelocity)
 			{
 				return;
 			}
-			if (!connectedData && holdable && holdable.held)
+			if (!ConnectedData && Holdable && Holdable.held)
 			{
-				connectedData = holdable.holderData;
+				ConnectedData = Holdable.holderData;
 			}
-			if (collision.transform.root == transform.root || (connectedData && connectedData.transform.root == collision.transform.root) || !collision.rigidbody || protectedRigs.Contains(collision.rigidbody) || sinceLastDamage < cooldown)
+			if (collision.transform.root == transform.root || (ConnectedData && ConnectedData.transform.root == collision.transform.root) || !collision.rigidbody || protectedRigs.Contains(collision.rigidbody) || SinceLastDamage < cooldown)
 			{
 				return;
 			}
 			
-			sinceLastDamage = 0f;
+			SinceLastDamage = 0f;
 			var data = collision.rigidbody.GetComponentInParent<DataHandler>();
 			var healthHandler = collision.rigidbody.GetComponentInParent<Damagable>();
 			if (healthHandler)
 			{
 				if (data && onlyOncePerData)
 				{
-					if (hitDatas.Contains(data)) return;
+					if (HitDatas.Contains(data)) return;
 					
-					hitDatas.Add(data);
+					HitDatas.Add(data);
 				}
 				if (weapon && lastHitHealth == healthHandler) return;
 				
 				lastHitHealth = healthHandler;
 				
-				if (collisionSound) collisionSound.DoEffect(collision.transform, collision, multiplier);
-				
-				var unit = connectedData ? connectedData.GetComponentInParent<Unit>() : GetComponentInParent<Unit>();
+				if (CollisionSound) CollisionSound.DoEffect(collision.transform, collision, multiplier);
+
 				Unit unit2 = null;
 				if (data) unit2 = data.GetComponentInParent<Unit>();
 				
-				if (unit2 && teamHolder && unit2.Team == teamHolder.team && ignoreTeamMates)
+				
+				if (unit2 && OwnUnit && unit2.Team == OwnUnit.Team && ignoreTeamMates)
 				{
 					return;
 				}
 				
-				if (!holdable && unit && unit.data.Dead)
+				if (!Holdable && OwnUnit && OwnUnit.data.Dead)
 				{
 					Destroy(this);
 					return;
@@ -213,11 +227,11 @@ namespace TGCore.Library
 				{
 					multiplier2 = 1f;
 				}
-				if (multiplierPoint && Vector3.Distance(collision.contacts[0].point, multiplierPoint.transform.position) < multiplierPoint.range)
+				if (MultiplierPoint && Vector3.Distance(collision.contacts[0].point, MultiplierPoint.transform.position) < MultiplierPoint.range)
 				{
-					multiplier2 *= multiplierPoint.multiplier;
+					multiplier2 *= MultiplierPoint.multiplier;
 				}
-				if (unit2 && teamHolder && unit2.Team == teamHolder.team)
+				if (unit2 && OwnUnit && unit2.Team == OwnUnit.Team)
 				{
 					multiplier2 *= teamDamage;
 				}
@@ -234,30 +248,20 @@ namespace TGCore.Library
 					WilhelmPhysicsFunctions.AddForceWithMinWeight(collision.rigidbody, (staticDamageValue ? 5f : Mathf.Sqrt(multiplier * 50f)) * direction * onImpactForce, ForceMode.Impulse, massCap);
 				}
 				
-				if (collision.rigidbody.mass < rig.mass)
+				if (collision.rigidbody.mass < Rig.mass)
 				{
 					collision.rigidbody.velocity *= 0.6f;
 					if (data) data.mainRig.velocity *= 0.6f;
 				}
 				
-				if (!ownUnit)
-				{
-					if (connectedData && connectedData.unit)
-					{
-						ownUnit = connectedData.unit;
-					}
-					else if (teamHolder && teamHolder.spawner)
-					{
-						ownUnit = teamHolder.spawner.GetComponentInParent<Unit>();
-					}
-				}
+				if (!OwnUnit) OwnUnit = GetOwnUnit();
 				
 				DealDamageAction?.Invoke(collision, damage * multiplier2, direction);
-				lastHitHealth.TakeDamage(damage * multiplier2, direction, ownUnit);
+				lastHitHealth.TakeDamage(damage * multiplier2, direction, OwnUnit);
 				
-				if (selfDamageMultiplier != 0f && unit)
+				if (selfDamageMultiplier != 0f && OwnUnit)
 				{
-					unit.data.healthHandler.TakeDamage(damage * multiplier2 * selfDamageMultiplier, direction);
+					OwnUnit.data.healthHandler.TakeDamage(damage * multiplier2 * selfDamageMultiplier, direction);
 				}
 
 				dealDamageEvent?.Invoke();
@@ -271,9 +275,9 @@ namespace TGCore.Library
 					DoCollisionEffects(data.mainRig.transform, collision);
 				}
 			}
-			else if (collisionSound)
+			else if (CollisionSound)
 			{
-				collisionSound.DoEffect(collision.transform, collision, multiplier);
+				CollisionSound.DoEffect(collision.transform, collision, multiplier);
 			}
 			
 			DoScreenShake(multiplier, collision);
@@ -281,9 +285,9 @@ namespace TGCore.Library
 	
 		private void DoCollisionEffects(Transform targetTransform, Collision collision)
 		{
-			if (meleeWeaponEffects != null && meleeWeaponEffects.Length > 0)
+			if (MeleeWeaponEffects != null && MeleeWeaponEffects.Length > 0)
 			{
-				foreach (var effect in meleeWeaponEffects)
+				foreach (var effect in MeleeWeaponEffects)
 				{
 					effect.DoEffect(targetTransform, collision);
 				}
@@ -318,7 +322,7 @@ namespace TGCore.Library
 	
 		public void Release()
 		{
-			hitDatas.Clear();
+			HitDatas.Clear();
 		}
 
 		public void SetCanDealDamage(bool value)

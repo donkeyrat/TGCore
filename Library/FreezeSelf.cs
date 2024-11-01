@@ -6,19 +6,19 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            allRigs = transform.root.GetComponentsInChildren<Rigidbody>();
+            AllRigs = transform.root.GetComponentsInChildren<Rigidbody>();
         }
     
         public void Freeze() 
         {
-            foreach (var rig in allRigs) rig.isKinematic = true;
+            foreach (var rig in AllRigs) rig.isKinematic = true;
         }
     
         public void UnFreeze() 
         {
-            foreach (var rig in allRigs) rig.isKinematic = false;
+            foreach (var rig in AllRigs) rig.isKinematic = false;
         }
 
-        private Rigidbody[] allRigs;
+        private Rigidbody[] AllRigs;
     }
 }

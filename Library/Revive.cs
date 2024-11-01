@@ -15,41 +15,41 @@ namespace TGCore.Library
     {
         public void Start()
         {
-            unit = transform.root.GetComponent<Unit>();
-            eyeSpawner = unit.GetComponentInChildren<EyeSpawner>();
-            unit.data.healthHandler.willBeRewived = true;
+            Unit = transform.root.GetComponent<Unit>();
+            EyeSpawner = Unit.GetComponentInChildren<EyeSpawner>();
+            Unit.data.healthHandler.willBeRewived = true;
             
-            if (unit.data.weaponHandler.rightWeapon != null && unit.data.weaponHandler.rightWeapon.GetComponent<Holdable>())
+            if (Unit.data.weaponHandler.rightWeapon != null && Unit.data.weaponHandler.rightWeapon.GetComponent<Holdable>())
             {
-                rightWeaponOriginal = unit.data.weaponHandler.rightWeapon.gameObject;
-                if (!letGoOfWeapons) unit.data.weaponHandler.rightWeapon.GetComponent<Holdable>().ignoreDissarm = true;
+                RightWeaponOriginal = Unit.data.weaponHandler.rightWeapon.gameObject;
+                if (!letGoOfWeapons) Unit.data.weaponHandler.rightWeapon.GetComponent<Holdable>().ignoreDissarm = true;
             }
-            if (unit.data.weaponHandler.leftWeapon != null && unit.data.weaponHandler.leftWeapon.GetComponent<Holdable>())
+            if (Unit.data.weaponHandler.leftWeapon != null && Unit.data.weaponHandler.leftWeapon.GetComponent<Holdable>())
             {
-                leftWeaponOriginal = unit.data.weaponHandler.leftWeapon.gameObject;
-                if (!letGoOfWeapons) unit.data.weaponHandler.leftWeapon.GetComponent<Holdable>().ignoreDissarm = true;
+                LeftWeaponOriginal = Unit.data.weaponHandler.leftWeapon.gameObject;
+                if (!letGoOfWeapons) Unit.data.weaponHandler.leftWeapon.GetComponent<Holdable>().ignoreDissarm = true;
             }
             
-            if (unit.GetComponentInChildren<AddRigidbodyOnDeath>())
-                foreach (var script in unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
+            if (Unit.GetComponentInChildren<AddRigidbodyOnDeath>())
+                foreach (var script in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
                 {
-                    unit.data.healthHandler.RemoveDieAction(script.Die); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Die); 
                     Destroy(script);
                 }
-            if (unit.GetComponentInChildren<SinkOnDeath>())
-                foreach (var script in unit.GetComponentsInChildren<SinkOnDeath>())
+            if (Unit.GetComponentInChildren<SinkOnDeath>())
+                foreach (var script in Unit.GetComponentsInChildren<SinkOnDeath>())
                 {
-                    unit.data.healthHandler.RemoveDieAction(script.Sink); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Sink); 
                     Destroy(script);
                 }
-            if (unit.GetComponentInChildren<RemoveJointsOnDeath>())
-                foreach (var script in unit.GetComponentsInChildren<RemoveJointsOnDeath>())
+            if (Unit.GetComponentInChildren<RemoveJointsOnDeath>())
+                foreach (var script in Unit.GetComponentsInChildren<RemoveJointsOnDeath>())
                 {
-                    unit.data.healthHandler.RemoveDieAction(script.Die); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Die); 
                     Destroy(script);
                 }
-            if (unit.GetComponentInChildren<DisableAllSkinnedClothes>())
-                foreach (var script in unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
+            if (Unit.GetComponentInChildren<DisableAllSkinnedClothes>())
+                foreach (var script in Unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
                 {
                     Destroy(script);
                 }
@@ -62,11 +62,11 @@ namespace TGCore.Library
 
         public IEnumerator Revival()
         {
-            var effect = unit.GetComponentsInChildren<UnitEffectBase>().ToList().Find(x => x.effectID == 1984 || x.effectID == 1987);
-            if (unit.data.health > 0f || effect)
+            var effect = Unit.GetComponentsInChildren<UnitEffectBase>().ToList().Find(x => x.effectID == 1984 || x.effectID == 1987);
+            if (Unit.data.health > 0f || effect)
             {
-                unit.data.healthHandler.willBeRewived = false;
-                ServiceLocator.GetService<GameModeService>().CurrentGameMode.OnUnitDied(unit);
+                Unit.data.healthHandler.willBeRewived = false;
+                ServiceLocator.GetService<GameModeService>().CurrentGameMode.OnUnitDied(Unit);
                 Destroy(this);
                 yield break;
             }
@@ -75,78 +75,78 @@ namespace TGCore.Library
             
             yield return new WaitForSeconds(reviveDelay);
             
-            unit.data.Dead = false;
-            unit.dead = false;
-            unit.data.hasBeenRevived = true;
-            unit.data.healthHandler.willBeRewived = false;
+            Unit.data.Dead = false;
+            Unit.dead = false;
+            Unit.data.hasBeenRevived = true;
+            Unit.data.healthHandler.willBeRewived = false;
             
-            unit.data.ragdollControl = 1f;
-            unit.data.muscleControl = 1f;
+            Unit.data.ragdollControl = 1f;
+            Unit.data.muscleControl = 1f;
             
-            unit.data.health = unit.data.maxHealth * reviveHealthMultiplier;
+            Unit.data.health = Unit.data.maxHealth * reviveHealthMultiplier;
 
-            if (unit.WeaponHandler && letGoOfWeapons)
+            if (Unit.WeaponHandler && letGoOfWeapons)
             {
                 if (rightWeaponToSpawn)
                 {
-                    var weapon = unit.unitBlueprint.SetWeapon(unit, unit.Team, rightWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Right, unit.data.mainRig.rotation, new List<GameObject>());
-                    weapon.rigidbody.mass *= unit.unitBlueprint.massMultiplier;
+                    var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, rightWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
+                    weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                     if (holdWithTwoHands)
                     {
-                        unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
+                        Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
                     }
                 }
-                else if (useWeaponsAfterRevive && rightWeaponOriginal)
+                else if (useWeaponsAfterRevive && RightWeaponOriginal)
                 {
-                    var weapon = unit.unitBlueprint.SetWeapon(unit, unit.Team, rightWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Right, unit.data.mainRig.rotation, new List<GameObject>());
-                    weapon.rigidbody.mass *= unit.unitBlueprint.massMultiplier;
+                    var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, RightWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
+                    weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                 }
                 if (!holdWithTwoHands)
                 {
                     if (leftWeaponToSpawn)
                     {
-                        var weapon = unit.unitBlueprint.SetWeapon(unit, unit.Team, leftWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Left, unit.data.mainRig.rotation, new List<GameObject>());
-                        weapon.rigidbody.mass *= unit.unitBlueprint.massMultiplier;
+                        var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, leftWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
+                        weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                     }
-                    else if (useWeaponsAfterRevive && leftWeaponOriginal)
+                    else if (useWeaponsAfterRevive && LeftWeaponOriginal)
                     {
-                        var weapon = unit.unitBlueprint.SetWeapon(unit, unit.Team, leftWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Left, unit.data.mainRig.rotation, new List<GameObject>());
-                        weapon.rigidbody.mass *= unit.unitBlueprint.massMultiplier;
+                        var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, LeftWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
+                        weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                     }
                 }
 
-                if (rightWeaponOriginal)
+                if (RightWeaponOriginal)
                 {
-                    rightWeaponOriginal.transform.SetParent(null);
+                    RightWeaponOriginal.transform.SetParent(null);
                     if (removeWeaponsAfterSeconds > 0f)
                     {
-                        var sec = rightWeaponOriginal.AddComponent<RemoveAfterSeconds>();
+                        var sec = RightWeaponOriginal.AddComponent<RemoveAfterSeconds>();
                         sec.shrink = true;
                         sec.seconds = removeWeaponsAfterSeconds;
                     }
-                    else if (removeWeaponsAfterSeconds < 0f) Destroy(rightWeaponOriginal);
+                    else if (removeWeaponsAfterSeconds < 0f) Destroy(RightWeaponOriginal);
                 }
-                if (leftWeaponOriginal)
+                if (LeftWeaponOriginal)
                 {
-                    leftWeaponOriginal.transform.SetParent(null);
+                    LeftWeaponOriginal.transform.SetParent(null);
                     if (removeWeaponsAfterSeconds > 0f)
                     {
-                        var sec = leftWeaponOriginal.AddComponent<RemoveAfterSeconds>();
+                        var sec = LeftWeaponOriginal.AddComponent<RemoveAfterSeconds>();
                         sec.shrink = true;
                         sec.seconds = removeWeaponsAfterSeconds;
                     }
-                    else if (removeWeaponsAfterSeconds < 0f) Destroy(leftWeaponOriginal);
+                    else if (removeWeaponsAfterSeconds < 0f) Destroy(LeftWeaponOriginal);
                 }
             }
 
             foreach (var ability in reviveAbilities)
             {
-                Instantiate(ability, unit.transform.position, unit.transform.rotation, unit.transform);
+                Instantiate(ability, Unit.transform.position, Unit.transform.rotation, Unit.transform);
             }
             
-            if (openEyes && eyeSpawner && eyeSpawner.spawnedEyes != null) 
+            if (openEyes && EyeSpawner && EyeSpawner.spawnedEyes != null) 
             {
-                foreach (var eye in eyeSpawner.spawnedEyes) 
+                foreach (var eye in EyeSpawner.spawnedEyes) 
                 {
                     eye.dead.SetActive(false);
                     eye.currentEyeState = GooglyEye.EyeState.Open;
@@ -155,38 +155,38 @@ namespace TGCore.Library
                 }
             }
             
-            if (unit.unitBlueprint.MovementComponents != null && unit.unitBlueprint.MovementComponents.Count > 0)
+            if (Unit.unitBlueprint.MovementComponents != null && Unit.unitBlueprint.MovementComponents.Count > 0)
             {
-                foreach (var mov in unit.unitBlueprint.MovementComponents)
+                foreach (var mov in Unit.unitBlueprint.MovementComponents)
                 {
-                    var mi = (MethodInfo)typeof(UnitAPI).GetMethod("CreateGenericRemoveComponentData", (BindingFlags)(-1)).Invoke(unit.api, new object[] { mov.GetType() });
-                    mi.Invoke(unit.GetComponent<GameObjectEntity>().EntityManager, new object[] { unit.GetComponent<GameObjectEntity>().Entity });
+                    var mi = (MethodInfo)typeof(UnitAPI).GetMethod("CreateGenericRemoveComponentData", (BindingFlags)(-1)).Invoke(Unit.api, new object[] { mov.GetType() });
+                    mi.Invoke(Unit.GetComponent<GameObjectEntity>().EntityManager, new object[] { Unit.GetComponent<GameObjectEntity>().Entity });
                 }
             }
             
-            unit.data.healthHandler.deathEvent.RemoveAllListeners();
-            foreach (var rigidbodyOnDeath in unit.GetComponentsInChildren<AddRigidbodyOnDeath>()) {
+            Unit.data.healthHandler.deathEvent.RemoveAllListeners();
+            foreach (var rigidbodyOnDeath in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>()) {
 
-                unit.data.healthHandler.RemoveDieAction(rigidbodyOnDeath.Die);
+                Unit.data.healthHandler.RemoveDieAction(rigidbodyOnDeath.Die);
             }
-            foreach (var deathEvent in unit.GetComponentsInChildren<DeathEvent>()) {
+            foreach (var deathEvent in Unit.GetComponentsInChildren<DeathEvent>()) {
 
-                unit.data.healthHandler.RemoveDieAction(deathEvent.Die);
+                Unit.data.healthHandler.RemoveDieAction(deathEvent.Die);
             }
             
-            ServiceLocator.GetService<UnitHealthbars>().HandleUnitSpawned(unit);
-            unit.api.SetTargetingType(unit.unitBlueprint.TargetingComponent);
-            unit.api.UpdateECSValues();
-            unit.InitializeUnit(unit.Team);
+            ServiceLocator.GetService<UnitHealthbars>().HandleUnitSpawned(Unit);
+            Unit.api.SetTargetingType(Unit.unitBlueprint.TargetingComponent);
+            Unit.api.UpdateECSValues();
+            Unit.InitializeUnit(Unit.Team);
 
             reviveEvent.Invoke();
             
             Destroy(this);
         }
 
-        private Unit unit;
+        private Unit Unit;
 
-        private EyeSpawner eyeSpawner;
+        private EyeSpawner EyeSpawner;
         
         [Header("Revive Settings")]
 
@@ -213,9 +213,9 @@ namespace TGCore.Library
         
         public GameObject leftWeaponToSpawn;
 
-        private GameObject rightWeaponOriginal;
+        private GameObject RightWeaponOriginal;
         
-        private GameObject leftWeaponOriginal;
+        private GameObject LeftWeaponOriginal;
 
         public bool holdWithTwoHands;
 

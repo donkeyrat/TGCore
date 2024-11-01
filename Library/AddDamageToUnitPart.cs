@@ -7,84 +7,84 @@ namespace TGCore.Library
 	{
 		private void Start()
 		{
-			ownUnit = transform.root.GetComponent<Unit>();
+			OwnUnit = transform.root.GetComponent<Unit>();
 
 			GameObject chosenPart;
 			switch (bodyTarget)
 			{
 				case BodyTarget.Head:
-					chosenPart = ownUnit.data.head.gameObject;
+					chosenPart = OwnUnit.data.head.gameObject;
 					break;
 				case BodyTarget.LeftFoot:
-					chosenPart = ownUnit.data.footLeft.gameObject;
+					chosenPart = OwnUnit.data.footLeft.gameObject;
 					break;
 				case BodyTarget.RightFoot:
-					chosenPart = ownUnit.data.footRight.gameObject;
+					chosenPart = OwnUnit.data.footRight.gameObject;
 					break;
 				case BodyTarget.LeftHand:
-					chosenPart = ownUnit.data.leftHand.gameObject;
+					chosenPart = OwnUnit.data.leftHand.gameObject;
 					break;
 				case BodyTarget.RightHand:
-					chosenPart = ownUnit.data.rightHand.gameObject;
+					chosenPart = OwnUnit.data.rightHand.gameObject;
 					break;
 				default:
-					chosenPart = ownUnit.data.mainRig.gameObject;
+					chosenPart = OwnUnit.data.mainRig.gameObject;
 					break;
 			}
 			
 			var ownDamage = GetComponent<CollisionWeapon>();
 			if (ownDamage)
 			{
-				newDamage = chosenPart.AddComponent<CollisionWeapon>();
-				newDamage.damage = ownDamage.damage;
-				newDamage.impactMultiplier = ownDamage.impactMultiplier;
-				newDamage.onImpactForce = ownDamage.onImpactForce;
-				newDamage.massCap = ownDamage.massCap;
-				newDamage.ignoreTeamMates = ownDamage.ignoreTeamMates;
-				newDamage.staticDamageValue = ownDamage.staticDamageValue;
-				newDamage.onlyOncePerData = ownDamage.onlyOncePerData;
-				newDamage.cooldown = ownDamage.cooldown;
-				newDamage.onlyCollideWithRigs = true;
-				newDamage.dealDamageEvent = ownDamage.dealDamageEvent;
+				NewDamage = chosenPart.AddComponent<CollisionWeapon>();
+				NewDamage.damage = ownDamage.damage;
+				NewDamage.impactMultiplier = ownDamage.impactMultiplier;
+				NewDamage.onImpactForce = ownDamage.onImpactForce;
+				NewDamage.massCap = ownDamage.massCap;
+				NewDamage.ignoreTeamMates = ownDamage.ignoreTeamMates;
+				NewDamage.staticDamageValue = ownDamage.staticDamageValue;
+				NewDamage.onlyOncePerData = ownDamage.onlyOncePerData;
+				NewDamage.cooldown = ownDamage.cooldown;
+				NewDamage.onlyCollideWithRigs = true;
+				NewDamage.dealDamageEvent = ownDamage.dealDamageEvent;
 				Destroy(ownDamage);
 			}
 			
 			var ownSound = GetComponent<CollisionSound>();
 			if (ownSound)
 			{
-				newSound = chosenPart.AddComponent<CollisionSound>();
-				newSound.SoundEffectRef = ownSound.SoundEffectRef;
-				newSound.multiplier = ownSound.multiplier;
+				NewSound = chosenPart.AddComponent<CollisionSound>();
+				NewSound.SoundEffectRef = ownSound.SoundEffectRef;
+				NewSound.multiplier = ownSound.multiplier;
 				Destroy(ownSound);
 			}
 
 			var ownEffect = GetComponent<MeleeWeaponAddEffect>();
 			if (ownEffect)
 			{
-				newEffect = chosenPart.AddComponent<MeleeWeaponAddEffect>();
-				newEffect.EffectPrefab = ownEffect.EffectPrefab;
-				newEffect.ignoreTeamMates = ownEffect.ignoreTeamMates;
+				NewEffect = chosenPart.AddComponent<MeleeWeaponAddEffect>();
+				NewEffect.EffectPrefab = ownEffect.EffectPrefab;
+				NewEffect.ignoreTeamMates = ownEffect.ignoreTeamMates;
 				Destroy(ownEffect);
 			}
 			
 			var ownSpawn = GetComponent<MeleeWeaponSpawn>();
 			if (ownSpawn)
 			{
-				newSpawn = chosenPart.AddComponent<MeleeWeaponSpawn>();
-				newSpawn.objectToSpawn = ownSpawn.objectToSpawn;
-				newSpawn.pos = ownSpawn.pos;
-				newSpawn.rot = ownSpawn.rot;
-				newSpawn.cd = ownSpawn.cd;
+				NewSpawn = chosenPart.AddComponent<MeleeWeaponSpawn>();
+				NewSpawn.objectToSpawn = ownSpawn.objectToSpawn;
+				NewSpawn.pos = ownSpawn.pos;
+				NewSpawn.rot = ownSpawn.rot;
+				NewSpawn.cd = ownSpawn.cd;
 				Destroy(ownSpawn);
 			}
 		}
 
 		public void RemoveDamage()
 		{
-			if (newDamage) Destroy(newDamage);
-			if (newSound) Destroy(newSound);
-			if (newEffect) Destroy(newEffect);
-			if (newSpawn) Destroy(newSpawn);
+			if (NewDamage) Destroy(NewDamage);
+			if (NewSound) Destroy(NewSound);
+			if (NewEffect) Destroy(NewEffect);
+			if (NewSpawn) Destroy(NewSpawn);
 		}
 	
 		private void OnDestroy()
@@ -92,11 +92,11 @@ namespace TGCore.Library
 			RemoveDamage();
 		}
 		
-		private CollisionWeapon newDamage;
-		private CollisionSound newSound;
-		private MeleeWeaponAddEffect newEffect;
-		private MeleeWeaponSpawn newSpawn;
-		private Unit ownUnit;
+		private CollisionWeapon NewDamage;
+		private CollisionSound NewSound;
+		private MeleeWeaponAddEffect NewEffect;
+		private MeleeWeaponSpawn NewSpawn;
+		private Unit OwnUnit;
 		
 		public enum BodyTarget
 		{

@@ -7,7 +7,7 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            line = GetComponent<LineRenderer>();
+            Line = GetComponent<LineRenderer>();
             
             if (playOnStart) Go();
         }
@@ -24,12 +24,12 @@ namespace TGCore.Library
             {
                 t += Time.deltaTime;
                 
-                line.widthMultiplier = widthCurve.Evaluate(t);
+                Line.widthMultiplier = widthCurve.Evaluate(t);
                 yield return null;
             }
         }
 
-        private LineRenderer line;
+        private LineRenderer Line;
         
         public AnimationCurve widthCurve;
         

@@ -8,16 +8,16 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            teamHolder = GetComponent<TeamHolder>();
-            if (!teamHolder) return;
+            TeamHolder = GetComponent<TeamHolder>();
+            if (!TeamHolder) return;
             
             SetTarget();
 
-            if (target)
+            if (Target)
             {
                 var compensation = GetComponent<Compensation>();
                 var move = GetComponent<MoveTransform>();
-                transform.rotation = Quaternion.LookRotation(compensation.GetCompensation(target.data.mainRig.position, target.data.mainRig.velocity, 0f));
+                transform.rotation = Quaternion.LookRotation(compensation.GetCompensation(Target.data.mainRig.position, Target.data.mainRig.velocity, 0f));
                 move.Initialize();
             }
         }
@@ -27,15 +27,15 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, targetingRadius, Vector3.up, 0.1f, mainRigMask);
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != teamHolder.team)
+                .Where(x => x && !x.data.Dead && x.Team != TeamHolder.team)
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();
-            if (foundUnits.Length > 0) target = foundUnits[Random.Range(0, foundUnits.Length - 1)];
+            if (foundUnits.Length > 0) Target = foundUnits[Random.Range(0, foundUnits.Length - 1)];
         }
 
-        private Unit target;
-        private TeamHolder teamHolder;
+        private Unit Target;
+        private TeamHolder TeamHolder;
         
         public float targetingRadius = 5f;
         

@@ -7,14 +7,14 @@ namespace TGCore.Library
     {
         private void Update()
         {
-            counter += Time.deltaTime;
+            Counter += Time.deltaTime;
         }
     
         public override void DoEffect(Transform hitTransform, Collision collision)
         {
-            if (counter >= cooldown)
+            if (Counter >= cooldown)
             {
-                counter = 0f;
+                Counter = 0f;
                 var rotation = Quaternion.identity;
                 switch (rot)
                 {
@@ -33,13 +33,13 @@ namespace TGCore.Library
                 if (pos == Pos.TransformPos) position = transform.position;
                 else if (pos == Pos.ContactPoint) position = collision.contacts[0].point;
                 
-                TeamHolder.AddTeamHolder(Instantiate(objectToSpawn, position, rotation, transform), base.gameObject);
+                TeamHolder.AddTeamHolder(Instantiate(objectToSpawn, position, rotation, transform), gameObject);
                 
                 spawnEvent.Invoke();
             }
         }
         
-        private float counter;
+        private float Counter;
         
         public enum Rot
         {

@@ -7,7 +7,7 @@ namespace TGCore.Library
 	{
 		public void Start()
 		{
-			rig = GetComponent<Rigidbody>();
+			Rig = GetComponent<Rigidbody>();
 			if (playOnStart)
 			{
 				Go();
@@ -16,8 +16,8 @@ namespace TGCore.Library
 
 		public void Go()
 		{
-			if (done || !target) return;
-			done = true;
+			if (Done || !target) return;
+			Done = true;
 			
 			var targetRig = target.GetComponent<Rigidbody>();
 			
@@ -31,16 +31,16 @@ namespace TGCore.Library
 		{
 			if (target)
 			{
-				rig.AddForce((target.TransformPoint(offset) - transform.position) * force, ForceMode.Acceleration);
-				rig.velocity *= drag;
-				rig.angularVelocity *= drag;
-				rig.AddTorque(Vector3.Cross(transform.forward, target.forward).normalized * (Vector3.Angle(transform.forward, target.forward) * angularForce), ForceMode.Acceleration);
-				rig.AddTorque(Vector3.Cross(transform.up, Vector3.up).normalized * (Vector3.Angle(transform.up, Vector3.up) * angularForce * 0.2f), ForceMode.Acceleration);
+				Rig.AddForce((target.TransformPoint(offset) - transform.position) * force, ForceMode.Acceleration);
+				Rig.velocity *= drag;
+				Rig.angularVelocity *= drag;
+				Rig.AddTorque(Vector3.Cross(transform.forward, target.forward).normalized * (Vector3.Angle(transform.forward, target.forward) * angularForce), ForceMode.Acceleration);
+				Rig.AddTorque(Vector3.Cross(transform.up, Vector3.up).normalized * (Vector3.Angle(transform.up, Vector3.up) * angularForce * 0.2f), ForceMode.Acceleration);
 			}
 		}
 		
-		private Rigidbody rig;
-		private bool done;
+		private Rigidbody Rig;
+		private bool Done;
 		
 		[Header("Target Settings")]
 		

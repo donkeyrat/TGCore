@@ -13,7 +13,7 @@ namespace TGCore.Library
                 newEffect.transform.position = target.transform.root.position;
                 newEffect.transform.rotation = Quaternion.LookRotation(target.transform.root.position - transform.position);
                 
-                TeamHolder.AddTeamHolder(newEffect, base.transform.root.gameObject);
+                TeamHolder.AddTeamHolder(newEffect, transform.root.gameObject);
                 
                 existingEffect = newEffect.GetComponent<UnitEffectBase>();
                 existingEffect.DoEffect();
@@ -21,7 +21,7 @@ namespace TGCore.Library
                 var targetableEffects = existingEffect.gameObject.GetComponentsInChildren<TargetableEffect>();
                 foreach (var targetableEffect in targetableEffects)
                 {
-                    targetableEffect.DoEffect(base.transform, target.transform);
+                    targetableEffect.DoEffect(transform, target.transform);
                 }
             }
             else if (!onlyOnce)
@@ -33,6 +33,7 @@ namespace TGCore.Library
         public UnitEffectBase effectPrefab;
 
         public bool onlyOnce;
+        public bool onlyVampire;
 
         public float chance = 1f;
     }

@@ -7,21 +7,21 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownData = GetComponent<DataHandler>();
-            ownData.unit.WasDealtDamageAction += BreakPart;
+            OwnData = GetComponent<DataHandler>();
+            OwnData.unit.WasDealtDamageAction += BreakPart;
         }
 
         private void Update() 
         {
-            counter += Time.deltaTime;
+            Counter += Time.deltaTime;
         }
 
         public void BreakPart(float damage)
         {
-            if (breakableParts.Count <= 0 || !(ownData.health <= ownData.maxHealth * percentHealthRequirement) ||
-                !(Random.value < breakChance) || !(counter >= cooldown) || !(damage >= damageThreshold)) return;
+            if (breakableParts.Count <= 0 || !(OwnData.health <= OwnData.maxHealth * percentHealthRequirement) ||
+                !(Random.value < breakChance) || !(Counter >= cooldown) || !(damage >= damageThreshold)) return;
             
-            counter = 0f;
+            Counter = 0f;
                     
             var selectedPart = breakableParts[Random.Range(0, breakableParts.Count - 1)];
             selectedPart.AddComponent<Rigidbody>().mass = selectedPart.GetComponentInParent<Rigidbody>().mass;
@@ -33,8 +33,8 @@ namespace TGCore.Library
             breakableParts.Remove(selectedPart);
         }
         
-        private DataHandler ownData;
-        private float counter;
+        private DataHandler OwnData;
+        private float Counter;
 
         public List<GameObject> breakableParts;
         

@@ -12,72 +12,72 @@ namespace TGCore.Library
         {
             if (trigger == RiseType.OnStart) DoSpike();
             
-            if (GetComponent<TeamHolder>()) team = GetComponent<TeamHolder>().team;
-            else if (GetComponentInParent<TeamHolder>()) team = GetComponentInParent<TeamHolder>().team;
-            else if (GetComponentInChildren<TeamHolder>()) team = GetComponentInChildren<TeamHolder>().team;
-            else if (transform.root.GetComponent<Unit>()) team = transform.root.GetComponent<Unit>().Team == Team.Red ? Team.Blue : Team.Red;
+            if (GetComponent<TeamHolder>()) Team = GetComponent<TeamHolder>().team;
+            else if (GetComponentInParent<TeamHolder>()) Team = GetComponentInParent<TeamHolder>().team;
+            else if (GetComponentInChildren<TeamHolder>()) Team = GetComponentInChildren<TeamHolder>().team;
+            else if (transform.root.GetComponent<Unit>()) Team = transform.root.GetComponent<Unit>().Team == Team.Red ? Team.Blue : Team.Red;
         }
     
         public void DoSpike() 
         {
-            rising = true;
+            Rising = true;
         }
         
         void Update() 
         {
-            if (joint) 
+            if (Joint) 
             {
-                target.data.healthHandler.TakeDamage(stickDamage * Time.deltaTime, Vector3.zero);
+                Target.data.healthHandler.TakeDamage(stickDamage * Time.deltaTime, Vector3.zero);
                
-                if (adjustCounter < 1f) 
+                if (AdjustCounter < 1f) 
                 {
-                    adjustCounter += Time.deltaTime * adjustTime;
-                    joint.connectedAnchor = Vector3.Lerp(joint.connectedAnchor, Vector3.zero, adjustCounter);
+                    AdjustCounter += Time.deltaTime * adjustTime;
+                    Joint.connectedAnchor = Vector3.Lerp(Joint.connectedAnchor, Vector3.zero, AdjustCounter);
                 }
             }
     
-            if (!target) 
+            if (!Target) 
             {
                 if (trigger == RiseType.WhenTargetNear) SetTarget();
                 else if ((trigger == RiseType.OnStart || trigger == RiseType.Trigger) && transform.root.GetComponent<Unit>())
                 {
-                    target = transform.root.GetComponent<Unit>(); 
+                    Target = transform.root.GetComponent<Unit>(); 
                     DoSpike(); 
-                    foreach (var rig in target.GetComponentsInChildren<Rigidbody>()) rig.velocity *= 0f;
+                    foreach (var rig in Target.GetComponentsInChildren<Rigidbody>()) rig.velocity *= 0f;
                 }
             }
             
-            if (rising)
+            if (Rising)
             {
                 var riseValue = Vector3.up * (riseSpeed * Time.deltaTime);
 
                 if (impaleType == SpikeType.Scale) transform.localScale += riseValue;
                 else tip.localPosition += riseValue;
                 
-                if (target && Vector3.Distance(tip.position, target.data.mainRig.position) < stickDistance && !joint) {
+                if (Target && Vector3.Distance(tip.position, Target.data.mainRig.position) < stickDistance && !Joint) {
                     StartCoroutine(DelayEnd());
                     StartCoroutine(Stick());
                 }
-                else if (target && Vector3.Distance(tip.position, target.data.mainRig.position) > 6f) { Destroy(this); }
+                else if (Target && Vector3.Distance(tip.position, Target.data.mainRig.position) > 6f) { Destroy(this); }
             }
         }
     
         private IEnumerator Stick() 
         {
-            joint = tip.gameObject.AddComponent<FixedJoint>();
-            joint.connectedBody = target.data.mainRig;
-            joint.autoConfigureConnectedAnchor = false;
+            Joint = tip.gameObject.AddComponent<FixedJoint>();
+            Joint.connectedBody = Target.data.mainRig;
+            Joint.autoConfigureConnectedAnchor = false;
             
-            target.data.healthHandler.TakeDamage(damage, Vector3.zero);
+            Target.data.healthHandler.TakeDamage(damage, Vector3.zero);
             
             yield return new WaitForSeconds(stickTime);
-            Destroy(joint);
+            Destroy(Joint);
         }
     
         private IEnumerator DelayEnd() 
         {
             yield return new WaitForSeconds(stopSpikeDelay);
-            rising = false;
+            Rising = false;
         }
     
         public void SetTarget() 
@@ -85,16 +85,16 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(tip.position, targetDistance, Vector3.up, 0.1f, LayerMask.GetMask(new string[] { "MainRig" }));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != team)
+                .Where(x => x && !x.data.Dead && x.Team != Team)
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();
 
             if (foundUnits.Length > 0)
             {
-                target = foundUnits[0]; 
+                Target = foundUnits[0]; 
                 DoSpike(); 
-                foreach (var rig in target.GetComponentsInChildren<Rigidbody>()) rig.velocity *= 0f;
+                foreach (var rig in Target.GetComponentsInChildren<Rigidbody>()) rig.velocity *= 0f;
             }
         }
     
@@ -111,15 +111,15 @@ namespace TGCore.Library
             WhenTargetNear
         }
     
-        private Unit target;
+        private Unit Target;
     
-        private float adjustCounter;
+        private float AdjustCounter;
     
-        private FixedJoint joint;
+        private FixedJoint Joint;
     
-        private Team team;
+        private Team Team;
     
-        private bool rising;
+        private bool Rising;
     
         public SpikeType impaleType;
     

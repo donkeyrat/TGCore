@@ -8,23 +8,23 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownUnit = transform.root.GetComponent<Unit>();
-            ownUnit.data.healthHandler.AddDieAction(Die);
+            OwnUnit = transform.root.GetComponent<Unit>();
+            OwnUnit.data.healthHandler.AddDieAction(Die);
         }
 
         public void Die()
         {
-            if (hasDied) return;
+            if (HasDied) return;
 
-            rig = addRigidbody ? gameObject.AddComponent<Rigidbody>() : GetComponent<Rigidbody>();
-            rig.mass = mass;
-            rig.drag = drag;
-            rig.angularDrag = angularDrag;
-            rig.interpolation = interpolation;
+            Rig = addRigidbody ? gameObject.AddComponent<Rigidbody>() : GetComponent<Rigidbody>();
+            Rig.mass = mass;
+            Rig.drag = drag;
+            Rig.angularDrag = angularDrag;
+            Rig.interpolation = interpolation;
 
-            hasDied = true;
+            HasDied = true;
             
-            transform.SetParent(ownUnit.data.transform, true);
+            transform.SetParent(OwnUnit.data.transform, true);
 
             StartCoroutine(DoSink());
         }
@@ -35,13 +35,13 @@ namespace TGCore.Library
             var t = 0f;
             while (t < 3f)
             {
-                rig.drag *= 2f;
-                if (rig.velocity.magnitude < 1f) t += Time.deltaTime;
+                Rig.drag *= 2f;
+                if (Rig.velocity.magnitude < 1f) t += Time.deltaTime;
 
                 yield return null;
             }
 
-            rig.isKinematic = true;
+            Rig.isKinematic = true;
 
             t = 0f;
             while (t < 30f)
@@ -50,17 +50,17 @@ namespace TGCore.Library
                 t += Time.deltaTime;
                 if (scaleAfterDelay && t > scaleDelay)
                 {
-                    scaleMultiplier += Time.deltaTime * 0.35f;
-                    transform.localScale *= Mathf.Lerp(1f, 0f, scaleMultiplier);
+                    ScaleMultiplier += Time.deltaTime * 0.35f;
+                    transform.localScale *= Mathf.Lerp(1f, 0f, ScaleMultiplier);
                 }
 
                 yield return null;
             }
         }
         
-        private Unit ownUnit;
-        private bool hasDied;
-        private Rigidbody rig;
+        private Unit OwnUnit;
+        private bool HasDied;
+        private Rigidbody Rig;
 
         [Header("Rigidbody Settings")] 
         
@@ -77,6 +77,6 @@ namespace TGCore.Library
         
         public bool scaleAfterDelay = true;
         public float scaleDelay = 15f;
-        private float scaleMultiplier;
+        private float ScaleMultiplier;
     }
 }

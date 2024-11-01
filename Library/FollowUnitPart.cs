@@ -7,60 +7,60 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            ownData = transform.root.GetComponent<Unit>().data;
+            OwnData = transform.root.GetComponent<Unit>().data;
             
             switch (targetPart)
             {
                 case BodyPart.Head:
-                    chosenPart = ownData.head;
+                    ChosenPart = OwnData.head;
                     break;
                 case BodyPart.Torso:
-                    chosenPart = ownData.torso;
+                    ChosenPart = OwnData.torso;
                     break;
                 case BodyPart.Hip:
-                    chosenPart = ownData.hip.transform;
+                    ChosenPart = OwnData.hip.transform;
                     break;
                 case BodyPart.LegLeft:
-                    chosenPart = ownData.legLeft;
+                    ChosenPart = OwnData.legLeft;
                     break;
                 case BodyPart.LegRight:
-                    chosenPart = ownData.legRight;
+                    ChosenPart = OwnData.legRight;
                     break;
                 case BodyPart.ArmLeft:
-                    chosenPart = ownData.leftArm;
+                    ChosenPart = OwnData.leftArm;
                     break;
                 case BodyPart.ArmRight:
-                    chosenPart = ownData.rightArm;
+                    ChosenPart = OwnData.rightArm;
                     break;
                 case BodyPart.KneeLeft:
-                    chosenPart = ownData.footLeft;
+                    ChosenPart = OwnData.footLeft;
                     break;
                 case BodyPart.KneeRight:
-                    chosenPart = ownData.footRight;
+                    ChosenPart = OwnData.footRight;
                     break;
                 case BodyPart.ElbowLeft:
-                    chosenPart = ownData.leftHand;
+                    ChosenPart = OwnData.leftHand;
                     break;
                 case BodyPart.ElbowRight:
-                    chosenPart = ownData.rightHand;
+                    ChosenPart = OwnData.rightHand;
                     break;
                 default:
-                    chosenPart = ownData.torso;
+                    ChosenPart = OwnData.torso;
                     break;
             }
         }
 
         private void Update()
         {
-            if (chosenPart) 
+            if (ChosenPart) 
             {
-                transform.position = chosenPart.position;
-                transform.rotation = chosenPart.rotation;
+                transform.position = ChosenPart.position;
+                transform.rotation = ChosenPart.rotation;
             }
         }
 
-        private DataHandler ownData;
-        private Transform chosenPart;
+        private DataHandler OwnData;
+        private Transform ChosenPart;
 
         public enum BodyPart
         {

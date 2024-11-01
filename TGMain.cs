@@ -128,7 +128,7 @@ namespace TGCore
 		public static TGMain instance;
 		public static List<TGMod> modList = new List<TGMod>();
 		
-		public static ContentDatabase db => ContentDatabase.Instance();
+		public static ContentDatabase DB => ContentDatabase.Instance();
 		public static LandfallContentDatabase landfallDb => ContentDatabase.Instance().LandfallContentDatabase;
 		
 		public static List<SoundBank> newSounds = new List<SoundBank>(); 

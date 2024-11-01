@@ -6,22 +6,22 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            shake = GetComponent<RotationShake>();
+            Shake = GetComponent<RotationShake>();
             if (!animation) animation = GetComponent<CodeAnimation>();
-            initialShakeAmount = shakeAmount;
+            InitialShakeAmount = shakeAmount;
         }
         
         private void Update()
         {
-            shakeAmount = initialShakeAmount * animation.animationValue;
-            shake.AddForce(Random.onUnitSphere * (shakeAmount * Time.deltaTime));
+            shakeAmount = InitialShakeAmount * animation.animationValue;
+            Shake.AddForce(Random.onUnitSphere * (shakeAmount * Time.deltaTime));
         }
 
-        private RotationShake shake;
+        private RotationShake Shake;
 
         public CodeAnimation animation;
 
         public float shakeAmount = 1f;
-        private float initialShakeAmount = 1f;
+        private float InitialShakeAmount = 1f;
     }
 }

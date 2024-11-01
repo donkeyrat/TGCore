@@ -19,7 +19,7 @@ namespace TGCore.Library
         public float counter;
         
         public float cooldown;
-        
-        public LimbIK leg;
+
+        public Transform target;
     }
 }

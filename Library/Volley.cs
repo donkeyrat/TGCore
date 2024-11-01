@@ -10,8 +10,8 @@ namespace TGCore.Library
     {
         private void Start() 
         {
-            spawn = GetComponent<SpawnObject>();
-            teamHolder = GetComponent<TeamHolder>();
+            Spawn = GetComponent<SpawnObject>();
+            TeamHolder = GetComponent<TeamHolder>();
             
             SetTarget();
             StartCoroutine(SpawnArrows());
@@ -28,16 +28,16 @@ namespace TGCore.Library
                 {
                     var vector = transform.position + Vector3.up * spawnHeight + Random.insideUnitSphere * spawnRadius;
                     var direction = transform.position - vector + Random.insideUnitSphere * 1f;
-                    if (Random.value > 0.1f && nearbyUnits.Count > 0) 
+                    if (Random.value > 0.1f && NearbyUnits.Count > 0) 
                     {
-                        var index = Random.Range(0, nearbyUnits.Count);
-                        if (nearbyUnits[index] && nearbyUnits[index].data && nearbyUnits[index].data.mainRig)
+                        var index = Random.Range(0, NearbyUnits.Count);
+                        if (NearbyUnits[index] && NearbyUnits[index].data && NearbyUnits[index].data.mainRig)
                         {
-                            direction = nearbyUnits[index].data.mainRig.position + nearbyUnits[index].data.mainRig.velocity * 0.25f - vector;
+                            direction = NearbyUnits[index].data.mainRig.position + NearbyUnits[index].data.mainRig.velocity * 0.25f - vector;
                         }
                     }
     				
-                    spawn.Spawn(vector, direction);
+                    Spawn.Spawn(vector, direction);
                 }
                 yield return new WaitForSeconds(timeBetweenSpawns);
             }
@@ -47,17 +47,17 @@ namespace TGCore.Library
         {
     		
             var hits = Physics.SphereCastAll(transform.position, targetingRadius, Vector3.up, 0.1f, LayerMask.GetMask("MainRig"));
-            nearbyUnits = hits
+            NearbyUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != teamHolder.team)
+                .Where(x => x && !x.data.Dead && x.Team != TeamHolder.team)
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToList();
         }
     
-        private List<Unit> nearbyUnits = new List<Unit>();
-        private TeamHolder teamHolder;
-        private SpawnObject spawn;
+        private List<Unit> NearbyUnits = new List<Unit>();
+        private TeamHolder TeamHolder;
+        private SpawnObject Spawn;
         
         public float delay = 0.3f;
 

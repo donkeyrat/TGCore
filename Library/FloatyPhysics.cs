@@ -9,64 +9,66 @@ namespace TGCore.Library
 	{
 		private void Start()
 		{
-			data = transform.root.GetComponentInChildren<DataHandler>();
+			Data = transform.root.GetComponentInChildren<DataHandler>();
 			
-			if (data.footRight) rightFootRig = data.footRight.GetComponent<Rigidbody>();
-			if (data.footLeft) leftFootRig = data.footLeft.GetComponent<Rigidbody>();
-			if (data.head) headRig = data.head.GetComponent<Rigidbody>();
+			if (Data.footRight) RightFootRig = Data.footRight.GetComponent<Rigidbody>();
+			if (Data.footLeft) LeftFootRig = Data.footLeft.GetComponent<Rigidbody>();
+			if (Data.head) HeadRig = Data.head.GetComponent<Rigidbody>();
 			
-			m_gameStateManager = ServiceLocator.GetService<GameStateManager>();
+			MGameStateManager = ServiceLocator.GetService<GameStateManager>();
 
-			distance = Vector3.Distance(data.hip.position,
-				new Vector3(data.hip.position.x,
-					data.footLeft.GetComponentsInChildren<Collider>()[0].bounds.min.y,
-					data.hip.position.z)) * distanceMultiplier;
+			Distance = Vector3.Distance(Data.hip.position,
+				new Vector3(Data.hip.position.x,
+					Data.footLeft.GetComponentsInChildren<Collider>()[0].bounds.min.y,
+					Data.hip.position.z)) * distanceMultiplier;
 
-			flightForce *= data.unit.unitBlueprint.sizeMultiplier * data.unit.unitBlueprint.sizeMultiplier *
-			               (data.unit.unitBlueprint.sizeMultiplier >= 1.4f
-				               ? data.unit.unitBlueprint.sizeMultiplier * data.unit.unitBlueprint.sizeMultiplier
+			flightForce *= Data.unit.unitBlueprint.sizeMultiplier * Data.unit.unitBlueprint.sizeMultiplier *
+			               (Data.unit.unitBlueprint.sizeMultiplier >= 1.4f
+				               ? Data.unit.unitBlueprint.sizeMultiplier * Data.unit.unitBlueprint.sizeMultiplier
 				               : 1f);
-			if (data.unit.gameObject.name.Contains("Blackbeard")) flightForce *= 2f * 2f * 2f;
+			if (Data.unit.gameObject.name.Contains("Blackbeard")) flightForce *= 2f * 2f * 2f;
 			
-			if (transform.root.GetComponent<Mount>() && transform.root.GetComponentInChildren<StandingHandler>()) transform.root.GetComponentInChildren<StandingHandler>().enabled = true;
-			else if (transform.root.GetComponentInChildren<StandingHandler>()) transform.root.GetComponentInChildren<StandingHandler>().enabled = false;
+			if (transform.root.GetComponent<Mount>() && transform.root.GetComponentInChildren<StandingHandler>())
+				transform.root.GetComponentInChildren<StandingHandler>().enabled = true;
+			else if (transform.root.GetComponentInChildren<StandingHandler>())
+				transform.root.GetComponentInChildren<StandingHandler>().enabled = false;
 		}
 
 		private void FixedUpdate()
 		{
-			if (!active || (!data.legLeft.gameObject.activeSelf && !data.legRight.gameObject.activeSelf)) return;
+			if (!active || (!Data.legLeft.gameObject.activeSelf && !Data.legRight.gameObject.activeSelf)) return;
 
-			if (!hasKilledVelocity && data.Dead)
+			if (!HasKilledVelocity && Data.Dead)
 			{
-				hasKilledVelocity = true;
-				foreach (var rig in data.allRigs.AllRigs.Where(x => x != null)) rig.velocity += Vector3.down * rig.velocity.y;
+				HasKilledVelocity = true;
+				foreach (var rig in Data.allRigs.AllRigs.Where(x => x != null)) rig.velocity += Vector3.down * rig.velocity.y;
 			}
 
-			if (!hasHalvedForce && ((!data.legLeft.gameObject.activeSelf && data.legRight.gameObject.activeSelf) ||
-			                        (data.legLeft.gameObject.activeSelf && !data.legRight.gameObject.activeSelf)))
+			if (!HasHalvedForce && ((!Data.legLeft.gameObject.activeSelf && Data.legRight.gameObject.activeSelf) ||
+			                        (Data.legLeft.gameObject.activeSelf && !Data.legRight.gameObject.activeSelf)))
 			{
-				hasHalvedForce = true;
+				HasHalvedForce = true;
 				flightForce *= 0.3f;
 			}
 
-			Physics.Raycast(new Ray(transform.position, Vector3.down), out var hitInfo, distance, groundMask);
+			Physics.Raycast(new Ray(transform.position, Vector3.down), out var hitInfo, Distance, groundMask);
 			if (hitInfo.transform)
 			{
-				if (headRig)
+				if (HeadRig)
 				{
-					headRig.AddForce(Vector3.up * (flightForce * headForceMultiplier * flightCurve.Evaluate(hitInfo.distance) * data.ragdollControl), ForceMode.Acceleration);
+					HeadRig.AddForce(Vector3.up * (flightForce * headForceMultiplier * flightCurve.Evaluate(hitInfo.distance) * Data.ragdollControl), ForceMode.Acceleration);
 				}
-				data.mainRig.AddForce(Vector3.up * (flightForce * flightCurve.Evaluate(hitInfo.distance) * data.ragdollControl), ForceMode.Acceleration);
-				if (rightFootRig)
+				Data.mainRig.AddForce(Vector3.up * (flightForce * flightCurve.Evaluate(hitInfo.distance) * Data.ragdollControl), ForceMode.Acceleration);
+				if (RightFootRig)
 				{
-					rightFootRig.AddForce(Vector3.up * (flightForce * legForceMultiplier * 0.5f * flightCurve.Evaluate(hitInfo.distance) * data.ragdollControl), ForceMode.Acceleration);
+					RightFootRig.AddForce(Vector3.up * (flightForce * legForceMultiplier * 0.5f * flightCurve.Evaluate(hitInfo.distance) * Data.ragdollControl), ForceMode.Acceleration);
 				}
-				if (rightFootRig)
+				if (RightFootRig)
 				{
-					leftFootRig.AddForce(Vector3.up * (flightForce * legForceMultiplier * 0.5f * flightCurve.Evaluate(hitInfo.distance) * data.ragdollControl), ForceMode.Acceleration);
+					LeftFootRig.AddForce(Vector3.up * (flightForce * legForceMultiplier * 0.5f * flightCurve.Evaluate(hitInfo.distance) * Data.ragdollControl), ForceMode.Acceleration);
 				}
 				
-				data.TouchGround(hitInfo.point, hitInfo.normal);
+				Data.TouchGround(hitInfo.point, hitInfo.normal);
 			}
 		}
 
@@ -80,14 +82,14 @@ namespace TGCore.Library
 			active = false;
 		}
 		
-		private GameStateManager m_gameStateManager;
-		private DataHandler data;
-		private Rigidbody rightFootRig;
-		private Rigidbody leftFootRig;
-		private Rigidbody headRig;
-		private float distance;
-		private bool hasKilledVelocity;
-		private bool hasHalvedForce;
+		private GameStateManager MGameStateManager;
+		private DataHandler Data;
+		private Rigidbody RightFootRig;
+		private Rigidbody LeftFootRig;
+		private Rigidbody HeadRig;
+		private float Distance;
+		private bool HasKilledVelocity;
+		private bool HasHalvedForce;
 		
 		public LayerMask groundMask;
 

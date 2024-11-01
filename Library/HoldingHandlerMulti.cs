@@ -11,25 +11,25 @@ namespace TGCore.Library
         protected override void Start()
         {
             base.Start();
-            unit = transform.root.GetComponent<Unit>();
-            foreach (var weapon in unit.GetComponentsInChildren<Weapon>(true))
+            Unit = transform.root.GetComponent<Unit>();
+            foreach (var weapon in Unit.GetComponentsInChildren<Weapon>(true))
             {
-                existingWeapons.Add(weapon.gameObject);
+                ExistingWeapons.Add(weapon.gameObject);
             }
             foreach (var left in GetComponentsInChildren<HandLeft>(true))
             {
                 otherHands.Add(left);
-                if (unit.unitBlueprint.LeftWeapon != null)
+                if (Unit.unitBlueprint.LeftWeapon != null)
                 {
-                    SetWeapon(left.gameObject, Instantiate(unit.unitBlueprint.LeftWeapon, left.transform.position, left.transform.rotation, unit.transform));
+                    SetWeapon(left.gameObject, Instantiate(Unit.unitBlueprint.LeftWeapon, left.transform.position, left.transform.rotation, Unit.transform));
                 }
             }
             foreach (var right in GetComponentsInChildren<HandRight>(true))
             {
                 mainHands.Add(right);
-                if (unit.unitBlueprint.RightWeapon != null)
+                if (Unit.unitBlueprint.RightWeapon != null)
                 {
-                    SetWeapon(right.gameObject, Instantiate(unit.unitBlueprint.RightWeapon, right.transform.position, right.transform.rotation, unit.transform));
+                    SetWeapon(right.gameObject, Instantiate(Unit.unitBlueprint.RightWeapon, right.transform.position, right.transform.rotation, Unit.transform));
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace TGCore.Library
             spawnedWeapons.Add(weapon);
             
             if (handSlot.GetComponent<HandLeft>()) leftWeapons.Add(weapon);
-            else rightWeapons.Add(weapon);
+            else RightWeapons.Add(weapon);
             
             var rigidbody = handSlot.GetComponent<Rigidbody>();
             var holdable = weapon.GetComponent<Holdable>();
@@ -49,7 +49,7 @@ namespace TGCore.Library
             holdable.rig.position = rigidbody.position;
             if (holdable.holdableData.setRotation)
             {
-                holdable.rig.rotation = Quaternion.LookRotation(unit.data.mainRig.transform.TransformDirection(holdable.holdableData.forwardRotation), unit.data.mainRig.transform.TransformDirection(holdable.holdableData.upRotation));
+                holdable.rig.rotation = Quaternion.LookRotation(Unit.data.mainRig.transform.TransformDirection(holdable.holdableData.forwardRotation), Unit.data.mainRig.transform.TransformDirection(holdable.holdableData.upRotation));
             }
 
             rigidbody.GetComponentInChildren<Collider>(true).enabled = false;
@@ -57,18 +57,18 @@ namespace TGCore.Library
             var vector = holdable.transform.TransformPoint(handSlot.GetComponent<HandRight>() ? holdable.holdableData.rightHand.localPosition : holdable.holdableData.leftHand.localPosition);
             rigidbody.AddForceAtPosition((vector - rigidbody.position).normalized * 100f, rigidbody.position, ForceMode.Acceleration);
             
-            var vector2 = holdable.transform.position - unit.data.mainRig.position;
+            var vector2 = holdable.transform.position - Unit.data.mainRig.position;
             vector2.y *= 3f;
             
-            unit.data.mainRig.AddForce(vector2.normalized * 25f, ForceMode.Acceleration);
+            Unit.data.mainRig.AddForce(vector2.normalized * 25f, ForceMode.Acceleration);
             
             var joint = JointActions.AttachJoint(rigidbody, holdable, vector, handSlot.transform.rotation);
-            joints.Add(joint);
+            Joints.Add(joint);
 
-            if (handSlot.GetComponent<HandRight>()) rightJoints.Add(joint);
-            else leftJoints.Add(joint);
+            if (handSlot.GetComponent<HandRight>()) RightJoints.Add(joint);
+            else LeftJoints.Add(joint);
             
-            holdable.WasGrabbed(unit.data, rigidbody.transform);
+            holdable.WasGrabbed(Unit.data, rigidbody.transform);
             
             if (float.IsNaN(rigidbody.velocity.x))
             {
@@ -97,14 +97,14 @@ namespace TGCore.Library
                 rigidbody.gameObject.AddComponent<StoreHand>().weapon = holdable;
             }
 
-            if (unit.unitBlueprint.holdinigWithTwoHands)
+            if (Unit.unitBlueprint.holdinigWithTwoHands)
             {
-                joints.Add(JointActions.AttachJoint(otherHands.First().GetComponent<Rigidbody>(), holdable, otherHands.First().transform.position, otherHands.First().transform.rotation, true));
-                holdable.WasGrabbed(unit.data, otherHands.First().transform);
+                Joints.Add(JointActions.AttachJoint(otherHands.First().GetComponent<Rigidbody>(), holdable, otherHands.First().transform.position, otherHands.First().transform.rotation, true));
+                holdable.WasGrabbed(Unit.data, otherHands.First().transform);
                 otherHands.Remove(otherHands.First());
             }
 
-            holdable.holdableData.relativePosition.x += unit.unitBlueprint.weaponSeparation;
+            holdable.holdableData.relativePosition.x += Unit.unitBlueprint.weaponSeparation;
             
             if (handSlot.GetComponent<HandLeft>())
             {
@@ -114,14 +114,14 @@ namespace TGCore.Library
                 data.forwardRotation.x *= -1f;
             }
 
-            holdable.rig.mass *= unit.unitBlueprint.massMultiplier;
+            holdable.rig.mass *= Unit.unitBlueprint.massMultiplier;
 
-            foreach (var team in weapon.GetComponentsInChildren<TeamColor>()) { team.SetTeamColor(unit.Team); }
+            foreach (var team in weapon.GetComponentsInChildren<TeamColor>()) { team.SetTeamColor(Unit.Team); }
         }
 
         public void FixedUpdate()
         {
-            if (unit.data.Dead) return;
+            if (Unit.data.Dead) return;
             
             foreach (var obj in spawnedWeapons.Where(weapon => weapon))
             {
@@ -131,17 +131,17 @@ namespace TGCore.Library
                 if (weapon)
                 {
                     weapon.UpdateCounters();
-                    if (!weapon.IsOnCooldown() && unit.data.distanceToTarget <= weapon.maxRange && unit.data.angleToTarget <= weapon.maxAngle)
+                    if (!weapon.IsOnCooldown() && Unit.data.distanceToTarget <= weapon.maxRange && Unit.data.angleToTarget <= weapon.maxAngle)
                     {
                         weapon.internalCounter =
                             Mathf.Clamp(Random.Range(weapon.internalCooldown * -0.8f, weapon.internalCooldown * 0.2f),
                                 -1f,
                                 1f);
-                        weapon.Attack(unit.data.targetMainRig.position, unit.data.targetMainRig, Vector3.zero);
+                        weapon.Attack(Unit.data.targetMainRig.position, Unit.data.targetMainRig, Vector3.zero);
                     }
                 }
             }
-            foreach (var obj in existingWeapons.Where(weapon => weapon))
+            foreach (var obj in ExistingWeapons.Where(weapon => weapon))
             {
                 if (obj.GetComponent<Holdable>()) DoPid(obj);
                 
@@ -149,13 +149,13 @@ namespace TGCore.Library
                 if (weapon)
                 {
                     weapon.UpdateCounters();
-                    if (!weapon.IsOnCooldown() && unit.data.distanceToTarget <= weapon.maxRange && unit.data.angleToTarget <= weapon.maxAngle)
+                    if (!weapon.IsOnCooldown() && Unit.data.distanceToTarget <= weapon.maxRange && Unit.data.angleToTarget <= weapon.maxAngle)
                     {
                         weapon.internalCounter =
                             Mathf.Clamp(Random.Range(weapon.internalCooldown * -0.8f, weapon.internalCooldown * 0.2f),
                                 -1f,
                                 1f);
-                        weapon.Attack(unit.data.targetMainRig.position, unit.data.targetMainRig, Vector3.zero);
+                        weapon.Attack(Unit.data.targetMainRig.position, Unit.data.targetMainRig, Vector3.zero);
                     }
                 }
             }
@@ -163,13 +163,13 @@ namespace TGCore.Library
 
         public void LetGoOfAll(bool destroy = false)
         {
-            foreach (var joint in joints)
+            foreach (var joint in Joints)
             {
                 Destroy(joint);
             }
-            joints.Clear();
-            rightJoints.Clear();
-            leftJoints.Clear();
+            Joints.Clear();
+            RightJoints.Clear();
+            LeftJoints.Clear();
             if (spawnedWeapons.Count > 0)
             {
                 foreach (var weapon in spawnedWeapons.Where(weapon => weapon))
@@ -180,7 +180,7 @@ namespace TGCore.Library
             }
             spawnedWeapons.Clear();
             leftWeapons.Clear();
-            rightWeapons.Clear();
+            RightWeapons.Clear();
         }
 
         public void LetGoOfSpecific(HoldingHandler.HandType handType, bool destroy = false)
@@ -188,8 +188,8 @@ namespace TGCore.Library
             if (handType == HoldingHandler.HandType.Left)
             {
 
-                foreach (var joint in leftJoints) { Destroy(joint); }
-                leftJoints.Clear();
+                foreach (var joint in LeftJoints) { Destroy(joint); }
+                LeftJoints.Clear();
                 if (leftWeapons.Count > 0)
                 {
                     foreach (var weapon in leftWeapons)
@@ -207,11 +207,11 @@ namespace TGCore.Library
             else if (handType == HoldingHandler.HandType.Right)
             {
 
-                foreach (var joint in rightJoints) { Destroy(joint); }
-                rightJoints.Clear();
-                if (rightWeapons.Count > 0)
+                foreach (var joint in RightJoints) { Destroy(joint); }
+                RightJoints.Clear();
+                if (RightWeapons.Count > 0)
                 {
-                    foreach (var weapon in rightWeapons)
+                    foreach (var weapon in RightWeapons)
                     {
                         if (weapon != null)
                         {
@@ -220,7 +220,7 @@ namespace TGCore.Library
                             if (destroy) { Destroy(weapon); }
                         }
                     }
-                    rightWeapons.Clear();
+                    RightWeapons.Clear();
                 }
             }
         }
@@ -229,21 +229,21 @@ namespace TGCore.Library
         {
             var weapon = obj.GetComponent<Holdable>();
             
-            AddForce(weapon.pidData, unit.data.mainRig.transform.TransformPoint(weapon.holdableData.relativePosition), unit.data.muscleControl * weapon.pidData.holdingForceMultiplier);
+            AddForce(weapon.pidData, Unit.data.mainRig.transform.TransformPoint(weapon.holdableData.relativePosition), Unit.data.muscleControl * weapon.pidData.holdingForceMultiplier);
             var forwardDirection = weapon.holdableData.forwardRotation;
             if (weapon.pidData.extraUpPerMeter != 0f)
             {
-                forwardDirection += Vector3.up * unit.data.distanceToTarget;
+                forwardDirection += Vector3.up * Unit.data.distanceToTarget;
             }
-            AddTorque(weapon.pidData, unit.data.characterForwardObject.TransformDirection(forwardDirection), unit.data.muscleControl * weapon.pidData.holdingTorqueMultiplier);
-            AddTorqueUp(weapon.pidData, unit.data.characterForwardObject.TransformDirection(weapon.holdableData.upRotation), unit.data.muscleControl * weapon.pidData.holdingTorqueMultiplier);
+            AddTorque(weapon.pidData, Unit.data.characterForwardObject.TransformDirection(forwardDirection), Unit.data.muscleControl * weapon.pidData.holdingTorqueMultiplier);
+            AddTorqueUp(weapon.pidData, Unit.data.characterForwardObject.TransformDirection(weapon.holdableData.upRotation), Unit.data.muscleControl * weapon.pidData.holdingTorqueMultiplier);
         }
 
         public void AddForce(PidDataInstance pidData, Vector3 targetPosition, float multiplier = 1f)
         {
             var a = targetPosition - pidData.rig.position;
-            currentForce = a * pidData.proportionalForce;
-            pidData.rig.AddForce(currentForce * (Time.fixedDeltaTime * 60f * multiplier), ForceMode.Acceleration);
+            CurrentForce = a * pidData.proportionalForce;
+            pidData.rig.AddForce(CurrentForce * (Time.fixedDeltaTime * 60f * multiplier), ForceMode.Acceleration);
         }
 
         public void AddTorque(PidDataInstance pidData, Vector3 targetRotation, float multiplier = 1f)
@@ -254,8 +254,8 @@ namespace TGCore.Library
             {
                 vector = Vector3.ClampMagnitude(vector, pidData.capAngle);
             }
-            currentTorque = vector * pidData.proportionalTorque;
-            pidData.rig.AddTorque(multiplier * Time.fixedDeltaTime * 60f * -currentTorque, ForceMode.Acceleration);
+            CurrentTorque = vector * pidData.proportionalTorque;
+            pidData.rig.AddTorque(multiplier * Time.fixedDeltaTime * 60f * -CurrentTorque, ForceMode.Acceleration);
         }
 
         public void AddTorqueUp(PidDataInstance pidData, Vector3 targetRotation, float multiplier = 1f)
@@ -266,11 +266,11 @@ namespace TGCore.Library
             {
                 vector = Vector3.ClampMagnitude(vector, pidData.capAngle);
             }
-            currentTorqueUp = vector * pidData.proportionalTorque;
-            pidData.rig.AddTorque(multiplier * Time.fixedDeltaTime * 60f * -currentTorqueUp, ForceMode.Acceleration);
+            CurrentTorqueUp = vector * pidData.proportionalTorque;
+            pidData.rig.AddTorque(multiplier * Time.fixedDeltaTime * 60f * -CurrentTorqueUp, ForceMode.Acceleration);
         }
 
-        private Unit unit;
+        private Unit Unit;
 
         [HideInInspector]
         public List<GameObject> spawnedWeapons = new List<GameObject>();
@@ -278,15 +278,15 @@ namespace TGCore.Library
         [HideInInspector]
         public List<GameObject> leftWeapons = new List<GameObject>();
 
-        private readonly List<GameObject> rightWeapons = new List<GameObject>();
+        private readonly List<GameObject> RightWeapons = new List<GameObject>();
 
-        private readonly List<GameObject> existingWeapons = new List<GameObject>();
+        private readonly List<GameObject> ExistingWeapons = new List<GameObject>();
 
-        private readonly List<ConfigurableJoint> joints = new List<ConfigurableJoint>();
+        private readonly List<ConfigurableJoint> Joints = new List<ConfigurableJoint>();
 
-        private readonly List<ConfigurableJoint> rightJoints = new List<ConfigurableJoint>();
+        private readonly List<ConfigurableJoint> RightJoints = new List<ConfigurableJoint>();
 
-        private readonly List<ConfigurableJoint> leftJoints = new List<ConfigurableJoint>();
+        private readonly List<ConfigurableJoint> LeftJoints = new List<ConfigurableJoint>();
 
         [HideInInspector]
         public List<HandRight> mainHands = new List<HandRight>();
@@ -294,11 +294,11 @@ namespace TGCore.Library
         [HideInInspector]
         public List<HandLeft> otherHands = new List<HandLeft>();
 
-        private Vector3 currentForce;
+        private Vector3 CurrentForce;
 
-        private Vector3 currentTorque;
+        private Vector3 CurrentTorque;
 
-        private Vector3 currentTorqueUp;
+        private Vector3 CurrentTorqueUp;
     
         public class StoreHand : MonoBehaviour
         {

@@ -10,20 +10,20 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            teamHolder = GetComponent<TeamHolder>();
+            TeamHolder = GetComponent<TeamHolder>();
         }
     
         private void Update()
         {
             if (pointUp) transform.up = Vector3.up;
         
-            if (target)
+            if (Target)
             {
-                var targetPos = target.data.mainRig.position;
+                var targetPos = Target.data.mainRig.position;
                 var directionToMoveIn = new Vector3(targetPos.x, moveOnY ? targetPos.y : transform.position.y, targetPos.z) - transform.position;
                 transform.position += directionToMoveIn.normalized * (Time.deltaTime * moveSpeed);
 
-                if (Vector3.Distance(transform.position, directionToMoveIn) < rangeToStopAt) StartCoroutine(AddUnitToHitlist(target));
+                if (Vector3.Distance(transform.position, directionToMoveIn) < rangeToStopAt) StartCoroutine(AddUnitToHitlist(Target));
             }
         
             SetTarget();
@@ -31,11 +31,11 @@ namespace TGCore.Library
 
         private IEnumerator AddUnitToHitlist(Unit target)
         {
-            if (target) hitList.Add(target);
+            if (target) HitList.Add(target);
             
             yield return new WaitForSeconds(1.5f);
             
-            if (target && hitList.Contains(target)) hitList.Remove(target);
+            if (target && HitList.Contains(target)) HitList.Remove(target);
         }
 
         public void SetTarget()
@@ -43,17 +43,17 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, targetingRange, Vector3.up, 0.1f, LayerMask.GetMask("MainRig"));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => teamHolder && x && !x.data.Dead && x.Team != teamHolder.team && !hitList.Contains(x))
+                .Where(x => TeamHolder && x && !x.data.Dead && x.Team != TeamHolder.team && !HitList.Contains(x))
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();
         
-            if (foundUnits.Length > 0) target = foundUnits[0];
+            if (foundUnits.Length > 0) Target = foundUnits[0];
         }
 
-        private Unit target;
+        private Unit Target;
 
-        private TeamHolder teamHolder;
+        private TeamHolder TeamHolder;
         
         public bool moveOnY;
 
@@ -65,6 +65,6 @@ namespace TGCore.Library
 
         public float moveSpeed = 1f;
 
-        private List<Unit> hitList = new List<Unit>();
+        private List<Unit> HitList = new List<Unit>();
     }
 }

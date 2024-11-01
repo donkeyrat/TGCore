@@ -8,7 +8,7 @@ namespace TGCore.Library
     {
         private void Awake()
         {
-            line = GetComponent<LineRenderer>();
+            Line = GetComponent<LineRenderer>();
         }
 
         public void Activate(float speed = 1f)
@@ -28,7 +28,7 @@ namespace TGCore.Library
             {
                 t += Time.deltaTime * speed;
                 
-                line.widthMultiplier = Mathf.Lerp(activating ? 0f : scaleMultiplier, activating ? scaleMultiplier : 0f, Mathf.Clamp(t, 0f, 1f));
+                Line.widthMultiplier = Mathf.Lerp(activating ? 0f : scaleMultiplier, activating ? scaleMultiplier : 0f, Mathf.Clamp(t, 0f, 1f));
                 yield return null;
             }
         }
@@ -36,12 +36,12 @@ namespace TGCore.Library
 
         public void Update()
         {
-            line.SetPosition(0, p2.transform.position);
+            Line.SetPosition(0, p2.transform.position);
             if (Physics.Raycast(new Ray(p2.transform.position, p2.transform.forward), out var hit, maxDistance, layer))
             {
                 if (hit.collider)
                 {
-                    line.SetPosition(1, hit.point);
+                    Line.SetPosition(1, hit.point);
                     p1.transform.position = hit.point;
                     hitEvent.Invoke();
                 }
@@ -49,12 +49,12 @@ namespace TGCore.Library
             else
             {
                 var newPos = p2.transform.forward * maxDistance;
-                line.SetPosition(1, newPos);
+                Line.SetPosition(1, newPos);
                 p1.transform.position = newPos;
             }
         }
 
-        private LineRenderer line;
+        private LineRenderer Line;
     
         [Header("Line Settings")]
     

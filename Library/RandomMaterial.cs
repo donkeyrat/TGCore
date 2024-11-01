@@ -8,8 +8,8 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            rend = GetComponent<Renderer>();
-            delay = Random.Range(minDelay, maxDelay);
+            Rend = GetComponent<Renderer>();
+            Delay = Random.Range(minDelay, maxDelay);
             
             if (randomizeOnStart) ReplaceMaterials();
         }
@@ -22,14 +22,14 @@ namespace TGCore.Library
 
         private IEnumerator DoMatReplacing()
         {
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSeconds(Delay);
 
-            rend.materials[index].CopyPropertiesFromMaterial(matsToReplaceWith[Random.Range(0, matsToReplaceWith.Count)]);
+            Rend.materials[index].CopyPropertiesFromMaterial(matsToReplaceWith[Random.Range(0, matsToReplaceWith.Count)]);
         }
 
-        private Renderer rend;
+        private Renderer Rend;
 
-        private float delay;
+        private float Delay;
         
         public bool randomizeOnStart;
         

@@ -7,52 +7,52 @@ namespace TGCore.Library
 	{
 		public void Go()
 		{
-			if (done)
+			if (Done)
 			{
 				return;
 			}
-			done = true;
+			Done = true;
 
-			ownData = transform.root.GetComponent<Unit>().data;
+			OwnData = transform.root.GetComponent<Unit>().data;
 			
 			Transform chosenPart;
 			switch (bodyPart)
 			{
 				case BodyPart.Head:
-					chosenPart = ownData.head;
+					chosenPart = OwnData.head;
 					break;
 				case BodyPart.Torso:
-					chosenPart = ownData.torso;
+					chosenPart = OwnData.torso;
 					break;
 				case BodyPart.Hip:
-					chosenPart = ownData.hip.transform;
+					chosenPart = OwnData.hip.transform;
 					break;
 				case BodyPart.ArmLeft:
-					chosenPart = ownData.leftArm;
+					chosenPart = OwnData.leftArm;
 					break;
 				case BodyPart.ArmRight:
-					chosenPart = ownData.rightArm;
+					chosenPart = OwnData.rightArm;
 					break;
 				case BodyPart.ElbowLeft:
-					chosenPart = ownData.leftHand;
+					chosenPart = OwnData.leftHand;
 					break;
 				case BodyPart.ElbowRight:
-					chosenPart = ownData.rightHand;
+					chosenPart = OwnData.rightHand;
 					break;
 				case BodyPart.LegLeft:
-					chosenPart = ownData.legLeft;
+					chosenPart = OwnData.legLeft;
 					break;
 				case BodyPart.LegRight:
-					chosenPart = ownData.legRight;
+					chosenPart = OwnData.legRight;
 					break;
 				case BodyPart.KneeLeft:
-					chosenPart = ownData.footLeft;
+					chosenPart = OwnData.footLeft;
 					break;
 				case BodyPart.KneeRight:
-					chosenPart = ownData.footRight;
+					chosenPart = OwnData.footRight;
 					break;
 				default:
-					chosenPart = ownData.torso;
+					chosenPart = OwnData.torso;
 					break;
 			}
 	
@@ -63,9 +63,9 @@ namespace TGCore.Library
 			}
 		}
 		
-		private bool done;
+		private bool Done;
 	
-		private DataHandler ownData;
+		private DataHandler OwnData;
 		
 		public enum BodyPart
 		{

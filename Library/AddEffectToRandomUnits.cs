@@ -11,14 +11,14 @@ namespace TGCore.Library
 	{
 		private void Start() 
 	    {
-		    team = transform.root.GetComponent<Unit>().Team;
-	        teamSystem = World.Active.GetOrCreateManager<TeamSystem>();
+		    Team = transform.root.GetComponent<Unit>().Team;
+	        TeamSystem = World.Active.GetOrCreateManager<TeamSystem>();
 	    }
 	
 	    public void AddEffectToUnits() 
 	    {
 			ClearHitList();
-			StartCoroutine(DoEffect(teamSystem.GetTeamUnits(team == Team.Red ? (enemyTeam ? Team.Blue : team) : (enemyTeam ? Team.Red : team))));
+			StartCoroutine(DoEffect(TeamSystem.GetTeamUnits(Team == Team.Red ? (enemyTeam ? Team.Blue : Team) : (enemyTeam ? Team.Red : Team))));
 	    }
 	
 		private IEnumerator DoEffect(List<Unit> enemyUnits) 
@@ -27,10 +27,10 @@ namespace TGCore.Library
 			{
 				for (var i = 0; i < enemyUnits.Count / value; i++) 
 				{
-					if (!hitList.Contains(enemyUnits[i])) 
+					if (!HitList.Contains(enemyUnits[i])) 
 					{
 						AddEffect(transform.root.GetComponent<Unit>(), enemyUnits[i].data);
-						hitList.Add(enemyUnits[i]);
+						HitList.Add(enemyUnits[i]);
 						
 						yield return new WaitForSeconds(delay);
 					}
@@ -43,10 +43,10 @@ namespace TGCore.Library
 					if (enemyUnits.Count <= 0) yield break;
 					
 					var chosenUnit = enemyUnits[Random.Range(0, enemyUnits.Count - 1)];
-					if (!hitList.Contains(chosenUnit)) 
+					if (!HitList.Contains(chosenUnit)) 
 					{
 						AddEffect(transform.root.GetComponent<Unit>(), chosenUnit.data);
-						hitList.Add(chosenUnit);
+						HitList.Add(chosenUnit);
 						
 						yield return new WaitForSeconds(delay);
 					}
@@ -56,7 +56,7 @@ namespace TGCore.Library
 	
 		public void ClearHitList() 
 		{
-			hitList.Clear();
+			HitList.Clear();
 		}
 	
 		public void AddEffect(Unit attacker, DataHandler targetData)
@@ -87,9 +87,9 @@ namespace TGCore.Library
 			Specific
 		}
 	
-		private Team team;
-		private TeamSystem teamSystem;
-		private List<Unit> hitList = new List<Unit>();
+		private Team Team;
+		private TeamSystem TeamSystem;
+		private List<Unit> HitList = new List<Unit>();
 		
 		[Header("Selection Settings")]
 	

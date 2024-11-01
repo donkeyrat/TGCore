@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Landfall.TABS;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,19 +11,19 @@ namespace TGCore.Library
     {
         private void Awake()
         {
-            unit = transform.root.GetComponent<Unit>();
-            dragHandler = unit.GetComponentInChildren<DragHandler>();
-            rigHolder = unit.data.allRigs;
-            colorHandler = unit.GetComponentInChildren<UnitColorHandler>();
-            possess = MainCam.instance.GetComponentInParent<CameraAbilityPossess>();
-            unparent = GetComponent<Unparent>();
+            Unit = transform.root.GetComponent<Unit>();
+            DragHandler = Unit.GetComponentInChildren<DragHandler>();
+            RigHolder = Unit.data.allRigs;
+            ColorHandler = Unit.GetComponentInChildren<UnitColorHandler>();
+            Possess = MainCam.instance.GetComponentInParent<CameraAbilityPossess>();
+            Unparent = GetComponent<Unparent>();
 
-            originalDrags = new List<Vector2>(rigHolder.AllDrags);
+            OriginalDrags = new List<Vector2>(RigHolder.AllDrags);
         }
         
         public override void DoEffect()
         {
-            if (!unit.GetComponent<SpawnerBlueprintHolder>()) StartCoroutine(BeginTransformation());
+            if (!Unit.GetComponent<SpawnerBlueprintHolder>()) StartCoroutine(BeginTransformation());
         }
 
         public override void Ping()
@@ -33,31 +34,31 @@ namespace TGCore.Library
         {
             yield return new WaitForSeconds(SetState(TransformState.Transforming, false));
             
-            if (!unit || unit.data.Dead || unit.data.immunityForSeconds > 0) yield break;
+            if (!Unit || Unit.data.Dead || Unit.data.immunityForSeconds > 0 || Unit.GetComponentInChildren<UnKillable>()) yield break;
             
             var t = 0f;
-            while (t < transformDelay && unit && !unit.data.Dead)
+            while (t < transformDelay && Unit && !Unit.data.Dead)
             {
-                effectDealt += effectOverTime * Time.deltaTime;
+                EffectDealt += effectOverTime * Time.deltaTime;
                 
-                unit.data.healthHandler.TakeDamage(damageOverTime * Time.deltaTime, Vector3.zero);
-                for (var i = 0; i < rigHolder.AllDrags.Length; i++)
+                Unit.data.healthHandler.TakeDamage(damageOverTime * Time.deltaTime, Vector3.zero);
+                for (var i = 0; i < RigHolder.AllDrags.Length; i++)
                 {
-                    rigHolder.AllDrags[i].x += dragOverTime * Time.deltaTime;
-                    rigHolder.AllDrags[i].y += dragOverTime * Time.deltaTime;
+                    RigHolder.AllDrags[i].x += dragOverTime * Time.deltaTime;
+                    RigHolder.AllDrags[i].y += dragOverTime * Time.deltaTime;
                 }
-                if (dragHandler) dragHandler.UpdateDrag();
-                colorHandler.SetColor(color, effectDealt / (unit.data.maxHealth * percentAffectedThreshold));
+                if (DragHandler) DragHandler.UpdateDrag();
+                ColorHandler.SetColor(color, EffectDealt / (Unit.data.maxHealth * percentAffectedThreshold));
                 
                 t += Time.deltaTime;
                 yield return null;
             }
 
-            if (!unit || unit.data.Dead) yield break;
+            if (!Unit) yield break;
 
-            if (effectDealt / unit.data.maxHealth >= percentAffectedThreshold)
+            if (EffectDealt / Unit.data.maxHealth >= percentAffectedThreshold)
             {
-                storedHealth = unit.data.health;
+                StoredHealth = Unit.data.health;
                 StartCoroutine(DoTransform());
             }
             else
@@ -68,55 +69,74 @@ namespace TGCore.Library
 
         private IEnumerator DoTransform()
         {
-            if (!unit || unit.data.Dead) yield break;
+            if (!Unit) yield break;
             
             yield return new WaitForSeconds(SetState(TransformState.Transformed));
             
-            if (!unit || unit.data.Dead) yield break;
+            if (!Unit) yield break;
             
-            var newUnit = unitToTransformInto.Spawn(unit.data.mainRig.position, unit.data.mainRig.rotation, unit.Team)[0].GetComponent<Unit>();
-            newUnit.gameObject.AddComponent<SpawnerBlueprintHolder>().unitBlueprint = unit.unitBlueprint;
+            var newUnit = unitToTransformInto.Spawn(Unit.data.mainRig.position, Unit.data.mainRig.rotation, Unit.Team)[0].GetComponent<Unit>();
+            newUnit.gameObject.AddComponent<SpawnerBlueprintHolder>().unitBlueprint = Unit.unitBlueprint;
             
-            if (possess && possess.currentUnit == unit) possess.EnterUnit(newUnit);
-            foreach (var rig in newUnit.data.allRigs.AllRigs) rig.velocity = unit.data.mainRig.velocity;
+            if (Possess && Possess.currentUnit == Unit) Possess.EnterUnit(newUnit);
+            foreach (var rig in newUnit.data.allRigs.AllRigs) rig.velocity = Unit.data.mainRig.velocity;
 
             transform.SetParent(newUnit.data.mainRig.transform);
             transform.localPosition = Vector3.zero;
+
+            StoredAlive = !Unit.data.Dead;
             
-            unit.DestroyUnit();
+            Unit.DestroyUnit();
 
             yield return new WaitForSeconds(revertDelay);
+
+            if (!StoredAlive)
+            {
+                newUnit.data.healthHandler.Die();
+            }
             
-            if (!newUnit || newUnit.data.Dead) yield break;
+            if (!newUnit) yield break;
 
             yield return new WaitForSeconds(SetState(TransformState.Reverted));
 
-            if (!newUnit || newUnit.data.Dead) yield break;
+            if (!newUnit) yield break;
 
-            unit = newUnit.GetComponent<SpawnerBlueprintHolder>().unitBlueprint.Spawn(newUnit.data.mainRig.position, newUnit.data.mainRig.rotation, unit.Team)[0].GetComponent<Unit>();
-            if (keepOldHealth) unit.data.healthHandler.TakeDamage(unit.data.maxHealth - storedHealth, Vector3.zero);
+            if (StoredAlive)
+            {
+                Unit = newUnit.GetComponent<SpawnerBlueprintHolder>().unitBlueprint.Spawn(newUnit.data.mainRig.position, newUnit.data.mainRig.rotation, Unit.Team)[0].GetComponent<Unit>();
 
-            if (unparent) unparent.Go();
+                if (Possess && Possess.currentUnit == Unit) Possess.EnterUnit(Unit);
+                foreach (var rig in Unit.data.allRigs.AllRigs) rig.velocity = newUnit.data.mainRig.velocity;
+            }
+            
+            if (Unparent) Unparent.Go();
             newUnit.DestroyUnit();
+
+            yield return new WaitUntil(() => !Unit || Unit.data.lifeTime > 0.3f || Unit.data.Dead);
+
+            if (Unit && !Unit.data.Dead && keepOldHealth)
+            {
+                Unit.data.healthHandler.TakeDamage(Unit.data.maxHealth - StoredHealth, Vector3.zero);
+            }
         }
 
         private IEnumerator DontTransform()
         {
             yield return new WaitForSeconds(SetState(TransformState.None, false));
             
-            if (!unit || unit.data.Dead) yield break;
+            if (!Unit || Unit.data.Dead) yield break;
             
             var t = 0f;
             while (t < 1f)
             {
-                for (var i = 0; i < rigHolder.AllDrags.Length; i++)
+                for (var i = 0; i < RigHolder.AllDrags.Length; i++)
                 {
-                    rigHolder.AllDrags[i].x = Mathf.Lerp(rigHolder.AllDrags[i].x, originalDrags[i].x, t);
-                    rigHolder.AllDrags[i].y = Mathf.Lerp(rigHolder.AllDrags[i].y, originalDrags[i].y, t);
+                    RigHolder.AllDrags[i].x = Mathf.Lerp(RigHolder.AllDrags[i].x, OriginalDrags[i].x, t);
+                    RigHolder.AllDrags[i].y = Mathf.Lerp(RigHolder.AllDrags[i].y, OriginalDrags[i].y, t);
                 }
-                if (dragHandler) dragHandler.UpdateDrag();
+                if (DragHandler) DragHandler.UpdateDrag();
                 
-                colorHandler.SetColor(color, 1f - t);
+                ColorHandler.SetColor(color, 1f - t);
                 
                 t += Time.deltaTime;
                 yield return null;
@@ -126,7 +146,7 @@ namespace TGCore.Library
 
         public float SetState(TransformState state, bool doEvent = true)
         {
-            currentState = state;
+            CurrentState = state;
             if (doEvent) globalEvent.Invoke();
             return globalDelay;
         }
@@ -139,16 +159,17 @@ namespace TGCore.Library
             Reverted
         }
         
-        private TransformState currentState;
-        private float effectDealt;
-        private float storedHealth;
-        private Unit unit;
-        private CameraAbilityPossess possess;
-        private DragHandler dragHandler;
-        private RigidbodyHolder rigHolder;
-        private List<Vector2> originalDrags;
-        private UnitColorHandler colorHandler;
-        private Unparent unparent;
+        private TransformState CurrentState;
+        private float EffectDealt;
+        private float StoredHealth;
+        private bool StoredAlive;
+        private Unit Unit;
+        private CameraAbilityPossess Possess;
+        private DragHandler DragHandler;
+        private RigidbodyHolder RigHolder;
+        private List<Vector2> OriginalDrags;
+        private UnitColorHandler ColorHandler;
+        private Unparent Unparent;
 
         public UnityEvent globalEvent = new UnityEvent();
 

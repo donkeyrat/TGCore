@@ -9,29 +9,29 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            rig = GetComponent<Rigidbody>();
+            Rig = GetComponent<Rigidbody>();
             
-            ownUnit = transform.root.GetComponent<Unit>();
-            SetTarget(ownUnit, targetingRadius);
+            OwnUnit = transform.root.GetComponent<Unit>();
+            SetTarget(OwnUnit, targetingRadius);
         }
 
         private void Update()
         {
-            switchCounter += Time.deltaTime;
+            SwitchCounter += Time.deltaTime;
 
-            var shouldSwitch = target && switchTargetRandomly && switchCounter >= switchCooldown && switchDistance >= Vector3.Distance(transform.position, target.data.mainRig.position);
+            var shouldSwitch = Target && switchTargetRandomly && SwitchCounter >= switchCooldown && switchDistance >= Vector3.Distance(transform.position, Target.data.mainRig.position);
             
-            if (target && !target.data.Dead && !shouldSwitch)
+            if (Target && !Target.data.Dead && !shouldSwitch)
             {
-                rig.AddForce((target.data.mainRig.position - transform.position).normalized * (forwardForce * Time.deltaTime));
+                Rig.AddForce((Target.data.mainRig.position - transform.position).normalized * (forwardForce * Time.deltaTime));
             }
-            else if (!target || target.data.Dead) SetTarget(ownUnit, targetingRadius);
-            else if (shouldSwitch) SetTarget(ownUnit, switchRadius);
+            else if (!Target || Target.data.Dead) SetTarget(OwnUnit, targetingRadius);
+            else if (shouldSwitch) SetTarget(OwnUnit, switchRadius);
 
-            if (!target && !ranEvent)
+            if (!Target && !RanEvent)
             {
                 lostTargetEvent.Invoke();
-                if (runEventOnce) ranEvent = true;
+                if (runEventOnce) RanEvent = true;
             }
         }
 
@@ -41,18 +41,18 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, radius, Vector3.up, 0.1f, LayerMask.GetMask(new string[] { "MainRig" }));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && (doTeamCheck && x.Team != ownUnit.Team || !doTeamCheck))
+                .Where(x => x && !x.data.Dead && (doTeamCheck && x.Team != OwnUnit.Team || !doTeamCheck))
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();
-            if (foundUnits.Length != 0) target = switchTargetRandomly ? foundUnits[Random.Range(0, foundUnits.Length - 1)] : foundUnits[0];
+            if (foundUnits.Length != 0) Target = switchTargetRandomly ? foundUnits[Random.Range(0, foundUnits.Length - 1)] : foundUnits[0];
         }
         
-        private Unit target;
-        private Unit ownUnit;
-        private Rigidbody rig;
-        private float switchCounter;
-        private bool ranEvent;
+        private Unit Target;
+        private Unit OwnUnit;
+        private Rigidbody Rig;
+        private float SwitchCounter;
+        private bool RanEvent;
         
         [Header("Fly Settings")]
 

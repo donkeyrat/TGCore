@@ -18,10 +18,10 @@ namespace TGCore.Library
 
 		private void Start() 
 		{
-			attackEffects = GetComponents<ProjectileLauncherEffect>();
-			showProjectile = GetComponent<ProjectileLauncherShowProjectile>();
-			myLevel = GetComponent<Level>();
-			shootPosition = GetComponentInChildren<ShootPosition>() ? GetComponentInChildren<ShootPosition>().transform : transform;
+			AttackEffects = GetComponents<ProjectileLauncherEffect>();
+			ShowProjectile = GetComponent<ProjectileLauncherShowProjectile>();
+			MyLevel = GetComponent<Level>();
+			ShootPosition = GetComponentInChildren<ShootPosition>() ? GetComponentInChildren<ShootPosition>().transform : transform;
 			
 			var weapon = GetComponent<Weapon>();
 			var rootUnit = transform.root.GetComponent<Unit>();
@@ -29,11 +29,11 @@ namespace TGCore.Library
 			
 			if (weapon)
 			{
-				ownUnit = weapon.connectedData.unit;
-				levelMultiplier = weapon.levelMultiplier;
+				OwnUnit = weapon.connectedData.unit;
+				LevelMultiplier = weapon.levelMultiplier;
 			}
-			else if (rootUnit) ownUnit = rootUnit;
-			else if (teamHolder) ownUnit = teamHolder.spawner.GetComponent<Unit>();
+			else if (rootUnit) OwnUnit = rootUnit;
+			else if (teamHolder) OwnUnit = teamHolder.spawner.GetComponent<Unit>();
 			
 		}
 
@@ -44,29 +44,36 @@ namespace TGCore.Library
 
         private IEnumerator DelayedSwing()
         {
-			var target = ownUnit.data.targetData.unit;
+			var target = OwnUnit.data.targetData.unit;
 			
 			if (!target) yield break;
 			
-			foreach (var effect in attackEffects) effect.DoEffect(target.data.mainRig);
+			foreach (var effect in AttackEffects) effect.DoEffect(target.data.mainRig);
 
 			attackEvent.Invoke();
 			yield return new WaitForSeconds(spawnDelay);
 			shootEvent.Invoke();
 
-			if (showProjectile) showProjectile.pivot.gameObject.SetActive(false);
+			if (ShowProjectile) ShowProjectile.pivot.gameObject.SetActive(false);
 
-			spawnedObject = Instantiate(objectToSpawn, shootPosition.position, shootPosition.rotation, parentToMe ? transform : null);
-			spawnedObject.GetComponent<MoveTransform>().velocity = (target.data.mainRig.position - transform.position).normalized * spawnedObject.GetComponent<MoveTransform>().selfImpulse.magnitude;
+			var spawnDirection = GetSpawnDirection((target.data.mainRig.position - ShootPosition.position).normalized);
+
+			for (var i = 0; i < projectilesToSpawn; i++)
+			{
+				var spawnedObject = Instantiate(objectToSpawn, ShootPosition.position,
+					Quaternion.LookRotation(spawnDirection + 0.01f * spread * Random.insideUnitSphere),
+					parentToMe ? transform : null);
+
+				SetProjectileStats(spawnedObject, spawnDirection,
+					(target.data.mainRig.position - ShootPosition.position).normalized, target.data.mainRig,
+					ShootPosition.forward, target.data.mainRig.position, target.data.mainRig.velocity);
 			
-			var spawnDirection = GetSpawnDirection((target.data.mainRig.position - shootPosition.position).normalized, target.data.mainRig, new Vector3(0f, 0f, 0f));
-			SetProjectileStats(spawnedObject, spawnDirection, (target.data.mainRig.position - shootPosition.position).normalized, target.data.mainRig, shootPosition.forward, target.data.mainRig.position, target.data.mainRig.velocity);
-			
-			var team = spawnedObject.AddComponent<TeamHolder>();
-			team.spawner = ownUnit.gameObject;
-			team.spawnerWeapon = gameObject;
-			team.team = ownUnit.Team;
-			team.target = target.data.mainRig;
+				var team = spawnedObject.AddComponent<TeamHolder>();
+				team.spawner = OwnUnit.gameObject;
+				team.spawnerWeapon = gameObject;
+				team.team = OwnUnit.Team;
+				team.target = target.data.mainRig;
+			}
         }
 
 		public void SetProjectileStats(GameObject projectile, Vector3 spawnDir, Vector3 directionToTarget, Rigidbody targetRig, Vector3 shootPositionForward, Vector3 targetRigPosition, Vector3 targetRigVelocity)
@@ -77,9 +84,9 @@ namespace TGCore.Library
 				if (rig)
 				{
 					rig.AddForce(spawnDir * 1f, ForceMode.VelocityChange);
-					if (myLevel)
+					if (MyLevel)
 					{
-						rig.mass *= Mathf.Pow(myLevel.level, 1.5f);
+						rig.mass *= Mathf.Pow(MyLevel.level, 1.5f);
 					}
 				}
 				var compensation = projectile.transform.GetChild(i).GetComponentInChildren<Compensation>();
@@ -98,66 +105,62 @@ namespace TGCore.Library
 				var addForce = projectile.GetComponent<AddForce>();
 				if (addForce && compensation && compensation.forwardCompensation > 0f && targetRig)
 				{
-					addForce.force.z = addForce.force.z + Mathf.Pow(Mathf.Clamp(Vector3.Distance(targetRigPosition, transform.position), 0f, compensation.clampDistance), compensation.rangePow) * compensation.forwardCompensation;
+					addForce.force.z += Mathf.Pow(Mathf.Clamp(Vector3.Distance(targetRigPosition, transform.position), 0f, compensation.clampDistance), compensation.rangePow) * compensation.forwardCompensation;
 				}
 				var projectileHit = projectile.transform.GetChild(i).GetComponentInChildren<ProjectileHit>();
 				if (projectileHit)
 				{
-					projectileHit.damage *= levelMultiplier;
+					projectileHit.damage *= LevelMultiplier;
 					
-					if (ownUnit.data.input.hasControl) projectileHit.alwaysHitTeamMates = true;
-					if (myLevel) projectileHit.ignoreTeamMates = myLevel.ignoreTeam;
+					if (OwnUnit.data.input.hasControl) projectileHit.alwaysHitTeamMates = true;
+					if (MyLevel) projectileHit.ignoreTeamMates = MyLevel.ignoreTeam;
 				}
 				var collision = projectile.transform.GetChild(i).GetComponentInChildren<CollisionWeapon>();
 				if (collision)
 				{
-					collision.damage *= levelMultiplier;
+					collision.damage *= LevelMultiplier;
 				}
 			}
 			var level = projectile.GetComponent<Level>() ? projectile.GetComponent<Level>() : projectile.AddComponent<Level>();
-			level.levelMultiplier = levelMultiplier;
-			if (myLevel)
+			level.levelMultiplier = LevelMultiplier;
+			if (MyLevel)
 			{
-				level.ignoreTeam = myLevel.ignoreTeam;
-				level.level = myLevel.level;
+				level.ignoreTeam = MyLevel.ignoreTeam;
+				level.level = MyLevel.level;
 			}
 		}
 
-		private Vector3 GetSpawnDirection(Vector3 directionToTarget, Rigidbody targetRig, Vector3 forcedDirection)
+		private Vector3 GetSpawnDirection(Vector3 directionToTarget)
 		{
-			var result = Vector3.Lerp(directionToTarget, shootPosition.forward, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPosition.forward))).normalized;
-			if (ownUnit.data.input.hasControl)
-			{
-				if (!targetRig)
-				{
-					result = forcedDirection;
-				}
-			}
+			var result = Vector3.Lerp(directionToTarget, ShootPosition.forward,
+				shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, ShootPosition.forward))).normalized;
 			return result;
 		}
 
-		private Transform shootPosition;
-		private Unit ownUnit;
-		private GameObject spawnedObject;
-		private ProjectileLauncherEffect[] attackEffects;
-		private ProjectileLauncherShowProjectile showProjectile;
-		private Level myLevel;
-		private float levelMultiplier = 1f;
+		private Transform ShootPosition;
+		private Unit OwnUnit;
+		private ProjectileLauncherEffect[] AttackEffects;
+		private ProjectileLauncherShowProjectile ShowProjectile;
+		private Level MyLevel;
+		private float LevelMultiplier = 1f;
 		
-		[Header("Spawn Settings")]
+		public UnityEvent attackEvent = new UnityEvent();
+
+		public UnityEvent shootEvent = new UnityEvent();
+		
+		[Header("Spawning")]
 
 		public GameObject objectToSpawn;
+
+		public int projectilesToSpawn = 1;
 
         public float spawnDelay = 0.4f;
 
 		public bool parentToMe;
 		
-		[Header("Other Settings")]
+		[Header("Angling")]
 		
 		public AnimationCurve shootHelpAngleCurve = new AnimationCurve();
-
-		public UnityEvent attackEvent = new UnityEvent();
-
-		public UnityEvent shootEvent = new UnityEvent();
+		public float spread;
     }
 }

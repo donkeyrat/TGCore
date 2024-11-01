@@ -1,6 +1,7 @@
 ﻿using Landfall.TABS.GameMode;
 using UnityEngine;
 using HarmonyLib;
+using TGCore;
 
 namespace TGCore.HarmonyPatches
 {
