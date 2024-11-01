@@ -39,6 +39,11 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
  ### 1.0.5
 
  - Fixed a problem with units who sink on death being unable to die.
+ 
+ ### 1.0.7
+
+ - Added new code for compatibility with the latest Hidden Units update (let me know if this breaks any other TGCore mods).
+ - Fixed it not launching with the Microsoft Store version of TABS.
 
 ## Credits
 
