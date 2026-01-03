@@ -1,6 +1,6 @@
 # TG Core
 
-TG Core is a mod that does nothing but add a new Team Grad splash screen on its own. Its purpose is to provide code to all Team Grad mods, so that there is less repeating code. It also optimizes Team Grad mod load times.
+TG Core is a mod that does nothing, but is necessary to use other Team Grad mods. Its purpose is to provide code to all Team Grad mods, so that there is less repeating code. It also optimizes Team Grad mod load times.
 
 ### If you have trouble with the mod, or if you just want to chat, you can join the [TABS Mod Center](https://discord.gg/zrs44qyp7S).
 
@@ -8,7 +8,7 @@ TG Core is a mod that does nothing but add a new Team Grad splash screen on its 
 
 ## How To Use
 
-This mod does nothing on its own. You will know its installed if you see a special splash screen before the main menu is loaded when launching TABS.
+This mod does nothing on its own.
 
 ## Changelog
 
@@ -44,6 +44,11 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
 
  - Added new code for compatibility with the latest Hidden Units update (let me know if this breaks any other TGCore mods).
  - Fixed it not launching with the Microsoft Store version of TABS.
+
+ ### 1.1.0
+ 
+ - Added new code for the Holiday and future Hidden Units update.
+ - Reduced file size.
 
 ## Credits
 
