@@ -37,11 +37,10 @@ namespace TGCore.Library
 					usedRig[0] = Data.hip;
 					break;
 				case SpellAnimation.AnimationRig.This:
+					usedRig[0] = Rig;
 					break;
 				case SpellAnimation.AnimationRig.ThisRig:
-					break;
-				default:
-					usedRig = Data.allRigs.AllRigs;
+					usedRig[0] = GetComponent<Rigidbody>();
 					break;
 			}
 

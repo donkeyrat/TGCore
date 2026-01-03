@@ -30,29 +30,45 @@ namespace TGCore.Library
                 if (!letGoOfWeapons) Unit.data.weaponHandler.leftWeapon.GetComponent<Holdable>().ignoreDissarm = true;
             }
             
-            if (Unit.GetComponentInChildren<AddRigidbodyOnDeath>())
-                foreach (var script in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
+            var addRigidbodyOnDeath = Unit.GetComponentsInChildren<AddRigidbodyOnDeath>();
+            if (addRigidbodyOnDeath.Length > 0)
+            {
+                foreach (var script in addRigidbodyOnDeath)
                 {
-                    Unit.data.healthHandler.RemoveDieAction(script.Die); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Die);
                     Destroy(script);
                 }
-            if (Unit.GetComponentInChildren<SinkOnDeath>())
-                foreach (var script in Unit.GetComponentsInChildren<SinkOnDeath>())
+            }
+            
+            var sinkOnDeath = Unit.GetComponentsInChildren<SinkOnDeath>();
+            if (sinkOnDeath.Length > 0)
+            {
+                foreach (var script in sinkOnDeath)
                 {
-                    Unit.data.healthHandler.RemoveDieAction(script.Sink); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Sink);
                     Destroy(script);
                 }
-            if (Unit.GetComponentInChildren<RemoveJointsOnDeath>())
-                foreach (var script in Unit.GetComponentsInChildren<RemoveJointsOnDeath>())
+            }
+            
+            var removeJointsOnDeath = Unit.GetComponentsInChildren<RemoveJointsOnDeath>();
+            if (removeJointsOnDeath.Length > 0)
+            {
+                foreach (var script in removeJointsOnDeath)
                 {
-                    Unit.data.healthHandler.RemoveDieAction(script.Die); 
+                    Unit.data.healthHandler.RemoveDieAction(script.Die);
                     Destroy(script);
                 }
-            if (Unit.GetComponentInChildren<DisableAllSkinnedClothes>())
-                foreach (var script in Unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
+            }
+            
+            var disableAllSkinnedClothes = Unit.GetComponentsInChildren<DisableAllSkinnedClothes>();
+            if (disableAllSkinnedClothes.Length > 0)
+            {
+                foreach (var script in disableAllSkinnedClothes)
                 {
+                    Unit.data.healthHandler.RemoveDieAction(script.DoIt);
                     Destroy(script);
                 }
+            }
         }
 
         public void DoRevive()
@@ -91,15 +107,15 @@ namespace TGCore.Library
                 {
                     var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, rightWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
                     weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
-                    if (holdWithTwoHands)
-                    {
-                        Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
-                    }
+                    
+                    if (holdWithTwoHands) Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
                 }
                 else if (useWeaponsAfterRevive && RightWeaponOriginal)
                 {
                     var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, RightWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
                     weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
+                    
+                    if (holdWithTwoHands) Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
                 }
                 if (!holdWithTwoHands)
                 {
@@ -139,6 +155,19 @@ namespace TGCore.Library
                 }
             }
 
+            var conditionalEvents = Unit.GetComponentsInChildren<ConditionalEvent>();
+            if (conditionalEvents.Length > 0)
+            {
+                foreach (var ability in conditionalEvents)
+                {
+                    var field = typeof(ConditionalEvent).GetField("done", (BindingFlags)(-1));
+                    if (field != null)
+                    {
+                        field.SetValue(ability, false);
+                    }
+                }
+            }
+            
             foreach (var ability in reviveAbilities)
             {
                 Instantiate(ability, Unit.transform.position, Unit.transform.rotation, Unit.transform);

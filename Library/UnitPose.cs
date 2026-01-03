@@ -86,7 +86,7 @@ namespace TGCore.Library
         private Unit OwnUnit;
         private bool Pose;
         
-        public List<UnitPoseInstance> poses = new();
+        public List<UnitPoseInstance> poses = new List<UnitPoseInstance>();
 
         public bool beginPoseOnStart;
 

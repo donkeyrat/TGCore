@@ -27,6 +27,10 @@ namespace TGCore.Library
 				case BodyTarget.RightHand:
 					chosenPart = OwnUnit.data.rightHand.gameObject;
 					break;
+				case BodyTarget.Hip:
+					chosenPart = OwnUnit.data.hip.gameObject;
+					break;
+				case BodyTarget.MainRig:
 				default:
 					chosenPart = OwnUnit.data.mainRig.gameObject;
 					break;
@@ -46,7 +50,26 @@ namespace TGCore.Library
 				NewDamage.cooldown = ownDamage.cooldown;
 				NewDamage.onlyCollideWithRigs = true;
 				NewDamage.dealDamageEvent = ownDamage.dealDamageEvent;
+				NewDamage.callEffectsOn = ownDamage.callEffectsOn;
 				Destroy(ownDamage);
+			}
+			
+			var ownToggleable = GetComponent<CollisionWeaponToggleable>();
+			if (ownToggleable)
+			{
+				NewToggleableDamage = chosenPart.AddComponent<CollisionWeaponToggleable>();
+				NewToggleableDamage.damage = ownToggleable.damage;
+				NewToggleableDamage.impactMultiplier = ownToggleable.impactMultiplier;
+				NewToggleableDamage.onImpactForce = ownToggleable.onImpactForce;
+				NewToggleableDamage.massCap = ownToggleable.massCap;
+				NewToggleableDamage.ignoreTeamMates = ownToggleable.ignoreTeamMates;
+				NewToggleableDamage.staticDamageValue = ownToggleable.staticDamageValue;
+				NewToggleableDamage.onlyOncePerData = ownToggleable.onlyOncePerData;
+				NewToggleableDamage.cooldown = ownToggleable.cooldown;
+				NewToggleableDamage.dealDamageEvent = ownToggleable.dealDamageEvent;
+				NewToggleableDamage.canDealDamage = ownToggleable.canDealDamage;
+				NewToggleableDamage.callEffectsOn = ownToggleable.callEffectsOn;
+				Destroy(ownToggleable);
 			}
 			
 			var ownSound = GetComponent<CollisionSound>();
@@ -75,6 +98,7 @@ namespace TGCore.Library
 				NewSpawn.pos = ownSpawn.pos;
 				NewSpawn.rot = ownSpawn.rot;
 				NewSpawn.cd = ownSpawn.cd;
+				NewSpawn.SpawnEvent = ownSpawn.SpawnEvent;
 				Destroy(ownSpawn);
 			}
 		}
@@ -82,9 +106,21 @@ namespace TGCore.Library
 		public void RemoveDamage()
 		{
 			if (NewDamage) Destroy(NewDamage);
+			if (NewToggleableDamage) Destroy(NewDamage);
 			if (NewSound) Destroy(NewSound);
 			if (NewEffect) Destroy(NewEffect);
 			if (NewSpawn) Destroy(NewSpawn);
+		}
+
+		public void Release()
+		{
+			if (NewDamage) NewDamage.Release();
+			if (NewToggleableDamage) NewToggleableDamage.Release();
+		}
+
+		public void SetCanDealDamage(bool value)
+		{
+			if (NewToggleableDamage) NewToggleableDamage.SetCanDealDamage(value);
 		}
 	
 		private void OnDestroy()
@@ -93,6 +129,7 @@ namespace TGCore.Library
 		}
 		
 		private CollisionWeapon NewDamage;
+		private CollisionWeaponToggleable NewToggleableDamage;
 		private CollisionSound NewSound;
 		private MeleeWeaponAddEffect NewEffect;
 		private MeleeWeaponSpawn NewSpawn;
@@ -104,7 +141,9 @@ namespace TGCore.Library
 			RightFoot,
 			LeftFoot,
 			RightHand,
-			LeftHand
+			LeftHand,
+			MainRig,
+			Hip
 		}
 		
 		public BodyTarget bodyTarget;

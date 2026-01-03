@@ -118,7 +118,7 @@ namespace TGCore.Library
             }
         }
 
-        private List<Material> OriginalMaterials = new();
+        private List<Material> OriginalMaterials = new List<Material>();
         private Team Team;
         private bool hasChanged;
 

@@ -1,28 +1,29 @@
 ﻿using System;
 using UnityEngine;
 
-namespace TGCore.Library;
-
-public class UnitPoseInstance : MonoBehaviour
+namespace TGCore.Library
 {
-    public enum BodyPart
+    public class UnitPoseInstance : MonoBehaviour
     {
-        Head,
-        Torso,
-        Hip,
-        ArmLeft,
-        ArmRight,
-        ElbowLeft,
-        ElbowRight,
-        LegLeft,
-        LegRight,
-        KneeLeft,
-        KneeRight
-    }
+        public enum BodyPart
+        {
+            Head,
+            Torso,
+            Hip,
+            ArmLeft,
+            ArmRight,
+            ElbowLeft,
+            ElbowRight,
+            LegLeft,
+            LegRight,
+            KneeLeft,
+            KneeRight
+        }
 
-    public BodyPart unitPart;
-    public Transform posePart;
+        public BodyPart unitPart;
+        public Transform posePart;
             
-    [HideInInspector]
-    public Rigidbody rig;
+        [HideInInspector]
+        public Rigidbody rig;
+    }
 }

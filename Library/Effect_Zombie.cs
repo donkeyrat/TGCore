@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Landfall.TABS;
 using Landfall.TABS.AI.Components;
 using Landfall.TABS.AI.Components.Tags;
@@ -9,19 +10,73 @@ using Landfall.TABS.GameMode;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Events;
+using Team = Landfall.TABS.Team;
 
 namespace TGCore.Library
 {
     public class Effect_Zombie : UnitEffectBase
     {
-        private void Awake()
+        public enum ZombificationType
+        {
+            Standard,
+            Virus,
+            Support
+        }
+    
+        private Unit Unit;
+        private UnitColorHandler ColorHandler;
+        private GameObject Weapon1;
+        private GameObject Weapon2;
+    
+        private bool Done;
+        private float CurrentProgress;
+        private float LerpProgress;
+        
+        [Header("Zombification Settings")]
+        
+        public ZombificationType zombieType;
+    
+        public float progressToAdd = 100f;
+    
+        [Header("Revive Settings")] 
+        
+        public UnityEvent killEvent;
+        public UnityEvent reviveEvent;
+        
+        public float reviveDelay;
+    
+        [Range(0f, 1f)]
+        public float reviveHealthMultiplier = 0.5f;
+    
+        public float reviveTargetingPriority = 0.2f;
+    
+        public GameObject reviveWeapon;
+    
+        public List<GameObject> reviveAbilities = new List<GameObject>();
+        
+        public GameObject zombieStats;
+        
+        [Header("Effect Settings")] 
+        
+        public UnityEvent doEffectEvent;
+        public UnityEvent pingEvent;
+    
+        [Header("Color Settings")] 
+        
+        public UnitColorInstance color = new UnitColorInstance();
+    
+        public float lerpSpeed = 1f;
+        
+        private void Start()
         {
             Unit = transform.root.GetComponent<Unit>();
+            ColorHandler = Unit.data.GetComponent<UnitColorHandler>();
         }
         
         public override void DoEffect()
         {
             Unit = transform.root.GetComponent<Unit>();
+            ColorHandler = Unit.data.GetComponent<UnitColorHandler>();
             
             if (Unit.holdingHandler)
             {
@@ -42,11 +97,9 @@ namespace TGCore.Library
             else
             {
                 Unit.data.healthHandler.AddDieAction(Revive);
+                ApplyEffect();
+                doEffectEvent.Invoke();
             }
-            
-            ApplyEffect();
-            
-            doEffectEvent.Invoke();
         }
         
         public override void Ping()
@@ -55,7 +108,7 @@ namespace TGCore.Library
             
             pingEvent.Invoke();
         }
-
+    
         public void ApplyEffect()
         {
             if (Done || !Unit) return;
@@ -67,7 +120,10 @@ namespace TGCore.Library
     
         public void AddLerpProgress()
         {
-            if (Done && zombieType != ZombificationType.Support) return;
+            if (Done && zombieType != ZombificationType.Support)
+            {
+                return;
+            }
             
             StopCoroutine(DoLerp());
             StartCoroutine(DoLerp());
@@ -75,8 +131,6 @@ namespace TGCore.Library
     
         private IEnumerator DoLerp()
         {
-            if (Done && zombieType != ZombificationType.Support) yield break;
-            
             var c = 0f;
             var startProgress = LerpProgress;
             while (c < 1f)
@@ -92,37 +146,52 @@ namespace TGCore.Library
         private IEnumerator DoZombieChecks()
         {
             if (Done) yield break;
-
-            yield return new WaitForSeconds(0.05f);
-            
-            if (Done) yield break;
+            //yield return new WaitForSeconds(0.05f);
+            //if (Done) yield break;
     
             if (CurrentProgress >= 0.5f)
             {
                 Unit.data.healthHandler.willBeRewived = true;
-                if (Unit.GetComponentInChildren<AddRigidbodyOnDeath>())
-                    foreach (var script in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>())
+                
+                var addRigidbodyOnDeath = Unit.GetComponentsInChildren<AddRigidbodyOnDeath>();
+                if (addRigidbodyOnDeath.Length > 0)
+                {
+                    foreach (var script in addRigidbodyOnDeath)
                     {
-                        Unit.data.healthHandler.RemoveDieAction(script.Die); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Die);
                         Destroy(script);
                     }
-                if (Unit.GetComponentInChildren<SinkOnDeath>())
-                    foreach (var script in Unit.GetComponentsInChildren<SinkOnDeath>())
+                }
+                
+                var sinkOnDeath = Unit.GetComponentsInChildren<SinkOnDeath>();
+                if (sinkOnDeath.Length > 0)
+                {
+                    foreach (var script in sinkOnDeath)
                     {
-                        Unit.data.healthHandler.RemoveDieAction(script.Sink); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Sink);
                         Destroy(script);
                     }
-                if (Unit.GetComponentInChildren<RemoveJointsOnDeath>())
-                    foreach (var script in Unit.GetComponentsInChildren<RemoveJointsOnDeath>())
+                }
+                
+                var removeJointsOnDeath = Unit.GetComponentsInChildren<RemoveJointsOnDeath>();
+                if (removeJointsOnDeath.Length > 0)
+                {
+                    foreach (var script in removeJointsOnDeath)
                     {
-                        Unit.data.healthHandler.RemoveDieAction(script.Die); 
+                        Unit.data.healthHandler.RemoveDieAction(script.Die);
                         Destroy(script);
                     }
-                if (Unit.GetComponentInChildren<DisableAllSkinnedClothes>())
-                    foreach (var script in Unit.GetComponentsInChildren<DisableAllSkinnedClothes>())
+                }
+                
+                var disableAllSkinnedClothes = Unit.GetComponentsInChildren<DisableAllSkinnedClothes>();
+                if (disableAllSkinnedClothes.Length > 0)
+                {
+                    foreach (var script in disableAllSkinnedClothes)
                     {
+                        Unit.data.healthHandler.RemoveDieAction(script.DoIt);
                         Destroy(script);
                     }
+                }
             }
     
             if (CurrentProgress >= 1f && zombieType != ZombificationType.Support)
@@ -140,13 +209,15 @@ namespace TGCore.Library
             }
         }
     
-        public IEnumerator DoRevive()
+        private IEnumerator DoRevive()
         {
             ServiceLocator.GetService<GameModeService>().CurrentGameMode.OnUnitDied(Unit);
             
-            Landfall.TABS.Team newTeam;
+            Team newTeam;
+            
             if (zombieType == ZombificationType.Support) newTeam = Unit.data.team;
-            else newTeam = Unit.data.team == Landfall.TABS.Team.Red ? Landfall.TABS.Team.Blue : Landfall.TABS.Team.Red;
+            else newTeam = Unit.data.team == Team.Red ? Team.Blue : Team.Red;
+            
             Unit.data.team = newTeam;
             Unit.Team = newTeam;
             
@@ -211,6 +282,19 @@ namespace TGCore.Library
                 if (Weapon2 && Weapon2.GetComponent<Holdable>()) Weapon2.GetComponent<Holdable>().ignoreDissarm = false;
             }
             
+            var conditionalEvents = Unit.GetComponentsInChildren<ConditionalEvent>();
+            if (conditionalEvents.Length > 0)
+            {
+                foreach (var ability in conditionalEvents)
+                {
+                    var field = typeof(ConditionalEvent).GetField("done", (BindingFlags)(-1));
+                    if (field != null)
+                    {
+                        field.SetValue(ability, false);
+                    }
+                }
+            }
+            
             foreach (var ability in reviveAbilities)
             {
                 Instantiate(ability, Unit.transform.position, Unit.transform.rotation, Unit.transform);
@@ -224,14 +308,16 @@ namespace TGCore.Library
                 }
             }
             
-            if (Unit.data.GetComponent<StandingHandler>() && (Unit.name.Contains("Humanoid") || Unit.name.Contains("Stiffy") || Unit.name.Contains("Blackbeard") || Unit.name.Contains("Halfling")))
+            //if (Unit.data.GetComponent<StandingHandler>() && (Unit.name.Contains("Humanoid") || Unit.name.Contains("Stiffy") || Unit.name.Contains("Blackbeard") || Unit.name.Contains("Halfling")))
+            if (Unit.data.GetComponent<StandingHandler>() && Unit.data.GetComponent<AnimationHandler>())
             {
                 var ran = Unit.data.gameObject.AddComponent<RandomCharacterStats>();
-                ran.minStandingOffset = zombieStats.GetComponent<RandomCharacterStats>().minStandingOffset;
-                ran.maxStandingOffset = zombieStats.GetComponent<RandomCharacterStats>().maxStandingOffset;
-                ran.minMovement = zombieStats.GetComponent<RandomCharacterStats>().minMovement;
-                ran.maxMovemenmt = zombieStats.GetComponent<RandomCharacterStats>().maxMovemenmt;
-                ran.randomCurve = zombieStats.GetComponent<RandomCharacterStats>().randomCurve;
+                var zombieStatsToAdd = zombieStats.GetComponent<RandomCharacterStats>();
+                ran.minStandingOffset = zombieStatsToAdd.minStandingOffset;
+                ran.maxStandingOffset = zombieStatsToAdd.maxStandingOffset;
+                ran.minMovement = zombieStatsToAdd.minMovement;
+                ran.maxMovemenmt = zombieStatsToAdd.maxMovemenmt;
+                ran.randomCurve = zombieStatsToAdd.randomCurve;
             }
             
             Unit.api.SetTargetingType(Unit.unitBlueprint.TargetingComponent);
@@ -244,63 +330,11 @@ namespace TGCore.Library
         
         public void Update()
         {
-            if (Unit)
+            if (ColorHandler)
             {
-                Unit.data.GetComponent<UnitColorHandler>().SetColor(color, LerpProgress);
+                ColorHandler.SetColor(color, LerpProgress);
             }
         }
-    
-        public enum ZombificationType
-        {
-            Standard,
-            Virus,
-            Support
-        }
-    
-        private Unit Unit;
-        private GameObject Weapon1;
-        private GameObject Weapon2;
-    
-        private bool Done;
-        
-        [Header("Zombification Settings")]
-        
-        public ZombificationType zombieType;
-        
-        private float CurrentProgress;
-    
-        public float progressToAdd = 100f;
-    
-        [Header("Revive Settings")] 
-        
-        public UnityEvent killEvent;
-        public UnityEvent reviveEvent;
-        
-        public float reviveDelay;
-    
-        [Range(0f, 1f)]
-        public float reviveHealthMultiplier = 0.5f;
-    
-        public float reviveTargetingPriority = 0.2f;
-    
-        public GameObject reviveWeapon;
-
-        public List<GameObject> reviveAbilities = new List<GameObject>();
-        
-        public GameObject zombieStats;
-        
-        [Header("Effect Settings")] 
-        
-        public UnityEvent doEffectEvent;
-        public UnityEvent pingEvent;
-    
-        [Header("Color Settings")] 
-        
-        public UnitColorInstance color = new UnitColorInstance();
-        
-        private float LerpProgress;
-    
-        public float lerpSpeed = 1f;
     }
 }
 
