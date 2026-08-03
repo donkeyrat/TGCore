@@ -28,14 +28,17 @@ namespace TGCore.Library
 
         public void MaterialChange(float speed)
         {
-            hasChanged = true;
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
+            StopAllCoroutines();
+            
+            HasChanged = true;
             StartCoroutine(DoMaterialChange(index, Instantiate(renderer.materials[index]), newMaterial, speed));
         }
 
         public void MaterialRevert(float speed)
         {
-            if (!hasChanged) return;
-
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
+            if (!HasChanged) return;
             StopAllCoroutines();
 
             StartCoroutine(DoMaterialChange(index, newMaterial, OriginalMaterials[index], speed));
@@ -43,14 +46,18 @@ namespace TGCore.Library
 
         public void MaterialTeamChange(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
             StopAllCoroutines();
 
+            HasChanged = true;
             StartCoroutine(DoMaterialChange(index, Instantiate(renderer.materials[index]),
                 Team == Team.Red ? redMaterial : blueMaterial, speed));
         }
 
         public void MaterialTeamRevert(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
+            if (!HasChanged) return;
             StopAllCoroutines();
 
             StartCoroutine(DoMaterialChange(index, Team == Team.Red ? redMaterial : blueMaterial,
@@ -59,6 +66,7 @@ namespace TGCore.Library
 
         public void AllMaterialsChange(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
             StopAllCoroutines();
 
             for (var i = 0; i < renderer.materials.Length; i++)
@@ -69,6 +77,7 @@ namespace TGCore.Library
 
         public void AllMaterialsRevert(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
             StopAllCoroutines();
 
             for (var i = 0; i < renderer.materials.Length; i++)
@@ -79,6 +88,7 @@ namespace TGCore.Library
 
         public void AllMaterialsTeamChange(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
             StopAllCoroutines();
 
             for (var i = 0; i < renderer.materials.Length; i++)
@@ -90,6 +100,7 @@ namespace TGCore.Library
 
         public void AllMaterialsTeamRevert(float speed)
         {
+            if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
             StopAllCoroutines();
 
             for (var i = 0; i < renderer.materials.Length; i++)
@@ -98,18 +109,15 @@ namespace TGCore.Library
                     speed));
             }
         }
-
         public void Stop()
         {
             StopAllCoroutines();
         }
 
-        private IEnumerator DoMaterialChange(int indexToLerp, Material materialToStartWith, Material matToLerpTo,
-            float lerpSpeed)
+        private IEnumerator DoMaterialChange(int indexToLerp, Material materialToStartWith, Material matToLerpTo, float lerpSpeed)
         {
             var t = 0f;
-            while (t < 1f && !transform.root.GetComponentsInChildren<UnitEffectBase>().ToList()
-                       .Find(x => x.effectID == 1987))
+            while (t < 1f && !transform.root.GetComponentsInChildren<UnitEffectBase>().ToList().Find(x => x.effectID == 1987))
             {
                 t += Time.deltaTime * lerpSpeed;
 
@@ -118,9 +126,9 @@ namespace TGCore.Library
             }
         }
 
-        private List<Material> OriginalMaterials = new List<Material>();
+        private readonly List<Material> OriginalMaterials = new List<Material>();
         private Team Team;
-        private bool hasChanged;
+        private bool HasChanged;
 
         [Header("Material Settings")] public Renderer renderer;
         public int index;

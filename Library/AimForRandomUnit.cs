@@ -23,9 +23,9 @@ namespace TGCore.Library
                         compensation.GetCompensation(targetRig.position, targetRig.velocity, 0f) +
                         0.01f * spread * Random.insideUnitSphere);
 
-                    var ownUnit = OwnTeamHolder.spawner.GetComponent<Unit>();
-                    var ownWeapon = OwnTeamHolder.spawnerWeapon.GetComponentInParent<RangeWeapon>();
-                    if (ownWeapon.extraSpreadInMelee != 0f && ownUnit && ownUnit.data.distanceToTarget < 5f)
+                    var ownUnit = OwnTeamHolder.spawner?.GetComponent<Unit>();
+                    var ownWeapon = OwnTeamHolder.spawnerWeapon?.GetComponentInParent<RangeWeapon>();
+                    if (ownWeapon && ownWeapon.extraSpreadInMelee != 0f && ownUnit && ownUnit.data.distanceToTarget < 5f)
                     {
                         transform.Rotate(ownWeapon.extraSpreadInMelee * Random.insideUnitSphere); 
                     }
@@ -40,7 +40,7 @@ namespace TGCore.Library
             var hits = Physics.OverlapSphere(transform.position, maxRange, LayerMask.GetMask(new string[] { "MainRig" }));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != OwnTeamHolder.team)
+                .Where(x => x && !x.data.Dead && (!OwnTeamHolder || x.Team != OwnTeamHolder.team))
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();

@@ -11,6 +11,8 @@ public class Effect_ShareDamage : UnitEffectBase
     private GameModeService GameModeService;
     private SettingsInstance BugUnitsDying;
     private bool ChangingColor;
+    private bool Done;
+    private float Counter;
     
     [HideInInspector]
     public Unit unit;
@@ -19,6 +21,15 @@ public class Effect_ShareDamage : UnitEffectBase
 
     public UnitColorInstance damageColor;
     public AnimationCurve colorCurve;
+
+    private void Update()
+    {
+        if (Done)
+        {
+            Counter += Time.deltaTime;
+            if (Counter > 1f) Destroy(gameObject);
+        }
+    }
     
     public override void DoEffect()
     {
@@ -54,6 +65,7 @@ public class Effect_ShareDamage : UnitEffectBase
 
     public void SendDamageToUnits(float damage)
     {
+        if (Done) return;
         foreach (var connectedUnit in connectedUnits)
         {
             if (connectedUnit != null && connectedUnit != this)
@@ -86,8 +98,14 @@ public class Effect_ShareDamage : UnitEffectBase
         }
     }
 
+    public void Finish()
+    {
+        Done = true;
+    }
+    
     private void OnDestroy()
     {
+        StopAllCoroutines();
         if (ColorHandler)
         {
             ColorHandler.colors.RemoveAll(x => x.colorName == damageColor.colorName);

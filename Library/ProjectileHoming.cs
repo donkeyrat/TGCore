@@ -43,12 +43,12 @@ namespace TGCore.Library
                 Move.velocity = targetPos.normalized * Move.selfImpulse.magnitude;
                 transform.rotation = Quaternion.LookRotation(Vector3.RotateTowards(transform.forward, targetPos, Time.deltaTime * rotationSpeed, 0f));
             }
-            
-            if (Returning)
+            else if (Returning && ReturnObject)
             {
                 if (ReturnCounter >= 1f)
                 {
-                    Weapon.GetComponent<DelayEvent>().Go();
+                    var returnEvent = Weapon.GetComponent<ReturnableProjectileEvent>();
+                    if (returnEvent) returnEvent.Go();
                     Destroy(gameObject);
                     Returning = false;
                     return;
@@ -56,6 +56,11 @@ namespace TGCore.Library
                 transform.position = Vector3.Lerp(ReturnPosition, ReturnObject.position, ReturnCounter);
                 transform.rotation = Quaternion.Lerp(ReturnRotation, ReturnObject.rotation, ReturnCounter);
                 ReturnCounter += Time.deltaTime * returnSpeed;
+            }
+            else
+            {
+                Move.velocity = transform.forward * 20f;
+                Destroy(this);
             }
         }
         public void Return()
@@ -70,7 +75,7 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, maxRange, Vector3.up, 0.1f, LayerMask.GetMask(new string[] { "MainRig" }));
             var foundUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != OwnTeamHolder.team && !HitList.Contains(x))
+                .Where(x => x && !x.data.Dead && (!OwnTeamHolder || x.Team != OwnTeamHolder.team) && !HitList.Contains(x))
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToArray();

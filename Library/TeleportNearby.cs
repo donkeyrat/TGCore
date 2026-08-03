@@ -9,6 +9,21 @@ namespace TGCore.Library
 {
 	public class TeleportNearby : MonoBehaviour
 	{
+		private Unit Unit;
+		private ParticleSystem.ShapeModule Emission;
+		private ParticleSystem Part;
+		private List<PhysicsFollowBodyPart> Followers;
+
+		public float distanceToRandomlyTeleport = 5f;
+		public float moveDelay = 0.05f;
+		public bool meshParticle = true;
+		public UnityEvent prePoofEvent;
+		public UnityEvent poofEvent;
+
+		[Header("Check")] 
+		public float avoidRadius = 1f;
+		public LayerMask avoidMask;
+		
 		private void Start()
 		{
 			Unit = GetComponentInParent<Unit>();
@@ -28,60 +43,59 @@ namespace TGCore.Library
 	
 		private IEnumerator DoPoof()
 		{
-			if (Part)
+			var mainRigPos = Unit.data.mainRig.position;
+			var tryCount = 0;
+			var randomPos = Vector3.zero;
+			while (tryCount < 20)
 			{
-				Part.Emit(25);
+				randomPos = new Vector3(
+					mainRigPos.x + Random.Range(-distanceToRandomlyTeleport, distanceToRandomlyTeleport),
+					mainRigPos.y,
+					mainRigPos.z + Random.Range(-distanceToRandomlyTeleport, distanceToRandomlyTeleport));
+				
+				var mapColliders = new Collider[20];
+				Physics.OverlapSphereNonAlloc(randomPos, avoidRadius, mapColliders, avoidMask);
+				if (mapColliders.Where(x => x).ToArray().Length > 0)
+				{
+					tryCount++;
+					continue;
+				}
+
+				break;
 			}
+
+			if (randomPos == Vector3.zero)
+			{
+				yield break;
+			}
+			
+			prePoofEvent.Invoke();
+			Part?.Emit(25);
+			
 			yield return new WaitForSeconds(moveDelay);
 
-			var mainRigPos = Unit.data.mainRig.position;
-			var randomPos = new Vector3(
-				mainRigPos.x + Random.Range(-distanceToRandomlyTeleport, distanceToRandomlyTeleport),
-				mainRigPos.y,
-				mainRigPos.z + Random.Range(-distanceToRandomlyTeleport, distanceToRandomlyTeleport));
-		
-			var randomDirection = (randomPos - Unit.data.mainRig.position).normalized * ((randomPos - Unit.data.mainRig.position).magnitude + distanceToRandomlyTeleport);
-			var data = transform.root.GetComponentInChildren<DataHandler>();
-			for (var j = 0; j < data.transform.childCount; j++)
+			var randomDirection = randomPos - Unit.data.mainRig.position;
+			for (var j = 0; j < Unit.data.transform.childCount; j++)
 			{
-				var child = data.transform.GetChild(j);
+				var child = Unit.data.transform.GetChild(j);
 				child.position += randomDirection;
 			}
-			var component = data.GetComponent<WeaponHandler>();
-			var componentInParent = component.GetComponentInParent<DataHandler>();
-			if (component && !componentInParent)
+
+			if (Unit.data.weaponHandler)
 			{
-				if (component.rightWeapon)
-				{
-					component.rightWeapon.transform.position += randomDirection;
-				}
-				if (component.leftWeapon)
-				{
-					component.leftWeapon.transform.position += randomDirection;
-				}
+				if (Unit.data.weaponHandler.rightWeapon != null)
+					Unit.data.weaponHandler.rightWeapon.transform.position += randomDirection;
+
+				if (Unit.data.weaponHandler.leftWeapon != null)
+					Unit.data.weaponHandler.leftWeapon.transform.position += randomDirection;
 			}
 			foreach (var follower in Followers)
 			{
 				follower.transform.position += randomDirection;
 			}
-			poofEvent?.Invoke();
-			if (Part)
-			{
-				Part.Play();
-			}
+			
+			poofEvent.Invoke();
+			Part?.Play();
 		}
-
-		private Unit Unit;
-		private ParticleSystem.ShapeModule Emission;
-		private ParticleSystem Part;
-		private List<PhysicsFollowBodyPart> Followers;
-
-		public float distanceToRandomlyTeleport = 5f;
-
-		public float moveDelay = 0.05f;
-
-		public bool meshParticle = true;
-
-		public UnityEvent poofEvent;
 	}
 }

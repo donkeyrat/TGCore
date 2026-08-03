@@ -4,6 +4,6 @@ namespace TGCore.Library
 {
     public class CannotDrown : MonoBehaviour
     {
-        public float upForceMultiplier = 2f;
+        public float upForceMultiplier = 1f;
     }
 }

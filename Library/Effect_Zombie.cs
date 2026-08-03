@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -159,7 +160,7 @@ namespace TGCore.Library
                     foreach (var script in addRigidbodyOnDeath)
                     {
                         Unit.data.healthHandler.RemoveDieAction(script.Die);
-                        Destroy(script);
+                        //Destroy(script);
                     }
                 }
                 
@@ -169,7 +170,7 @@ namespace TGCore.Library
                     foreach (var script in sinkOnDeath)
                     {
                         Unit.data.healthHandler.RemoveDieAction(script.Sink);
-                        Destroy(script);
+                        //Destroy(script);
                     }
                 }
                 
@@ -179,17 +180,30 @@ namespace TGCore.Library
                     foreach (var script in removeJointsOnDeath)
                     {
                         Unit.data.healthHandler.RemoveDieAction(script.Die);
-                        Destroy(script);
+                        //Destroy(script);
                     }
                 }
                 
-                var disableAllSkinnedClothes = Unit.GetComponentsInChildren<DisableAllSkinnedClothes>();
-                if (disableAllSkinnedClothes.Length > 0)
+                var skeletonDeathAction = Unit.GetComponentsInChildren<SkeletonDeathAction>();
+                if (skeletonDeathAction.Length > 0)
                 {
-                    foreach (var script in disableAllSkinnedClothes)
+                    foreach (var script in skeletonDeathAction)
                     {
-                        Unit.data.healthHandler.RemoveDieAction(script.DoIt);
-                        Destroy(script);
+                        MethodInfo method = typeof(SkeletonDeathAction).GetMethod(
+                            "OnDeathAction",
+                            BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                        if (method != null)
+                        {
+                            Action handler = (Action)Delegate.CreateDelegate(
+                                typeof(Action),
+                                script,
+                                method);
+                        
+                            Unit.data.healthHandler.RemoveDieAction(handler);
+                        }
+                        //Destroy(script);
                     }
                 }
             }
@@ -238,11 +252,6 @@ namespace TGCore.Library
             
             yield return new WaitForSeconds(reviveDelay);
     
-            Unit.data.Dead = false;
-            Unit.dead = false;
-            Unit.data.hasBeenRevived = true;
-            Unit.data.healthHandler.willBeRewived = false;
-    
             Unit.data.ragdollControl = 1f;
             Unit.data.muscleControl = 1f;
     
@@ -255,8 +264,10 @@ namespace TGCore.Library
                     if (Weapon1) Weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
                     if (Weapon2) Weapon1.AddComponent<RemoveAfterSeconds>().shrink = true;
                     Unit.holdingHandler.LetGoOfAll();
-                    Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
-                    Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
+                    var weapon1 = Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
+                    weapon1.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
+                    var weapon2 = Unit.unitBlueprint.SetWeapon(Unit, newTeam, reviveWeapon, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
+                    weapon2.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                 }
                 else if (Unit.GetComponentInChildren<HoldingHandlerMulti>())
                 {
@@ -308,7 +319,6 @@ namespace TGCore.Library
                 }
             }
             
-            //if (Unit.data.GetComponent<StandingHandler>() && (Unit.name.Contains("Humanoid") || Unit.name.Contains("Stiffy") || Unit.name.Contains("Blackbeard") || Unit.name.Contains("Halfling")))
             if (Unit.data.GetComponent<StandingHandler>() && Unit.data.GetComponent<AnimationHandler>())
             {
                 var ran = Unit.data.gameObject.AddComponent<RandomCharacterStats>();
@@ -318,6 +328,57 @@ namespace TGCore.Library
                 ran.minMovement = zombieStatsToAdd.minMovement;
                 ran.maxMovemenmt = zombieStatsToAdd.maxMovemenmt;
                 ran.randomCurve = zombieStatsToAdd.randomCurve;
+            }
+            
+            Unit.data.Dead = false;
+            Unit.dead = false;
+            Unit.data.hasBeenRevived = true;
+            Unit.data.healthHandler.willBeRewived = false;
+            
+            var addRigidbodyOnDeath = Unit.GetComponentsInChildren<AddRigidbodyOnDeath>();
+            if (addRigidbodyOnDeath.Length > 0)
+            {
+                foreach (var script in addRigidbodyOnDeath)
+                {
+                    Unit.data.healthHandler.AddDieAction(script.Die);
+                }
+            }
+            
+            var sinkOnDeath = Unit.GetComponentsInChildren<SinkOnDeath>();
+            if (sinkOnDeath.Length > 0)
+            {
+                foreach (var script in sinkOnDeath)
+                {
+                    Unit.data.healthHandler.AddDieAction(script.Sink);
+                }
+            }
+            
+            var removeJointsOnDeath = Unit.GetComponentsInChildren<RemoveJointsOnDeath>();
+            if (removeJointsOnDeath.Length > 0)
+            {
+                foreach (var script in removeJointsOnDeath)
+                {
+                    Unit.data.healthHandler.AddDieAction(script.Die);
+                }
+            }
+            
+            var skeletonDeathAction = Unit.GetComponentsInChildren<SkeletonDeathAction>();
+            if (skeletonDeathAction.Length > 0)
+            {
+                foreach (var script in skeletonDeathAction)
+                {
+                    MethodInfo method = typeof(SkeletonDeathAction).GetMethod(
+                        "OnDeathAction",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (method != null)
+                    {
+                        Action handler = (Action)Delegate.CreateDelegate(
+                            typeof(Action),
+                            script,
+                            method);
+                        Unit.data.healthHandler.AddDieAction(handler);
+                    }
+                }
             }
             
             Unit.api.SetTargetingType(Unit.unitBlueprint.TargetingComponent);

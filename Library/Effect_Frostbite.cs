@@ -60,8 +60,6 @@ public class Effect_Frostbite : UnitEffectBase
 		Movement = Data.GetComponent<MovementHandler>();
 		Rotation = Data.GetComponent<RotationHandler>();
 		ColorHandler = Data.GetComponent<UnitColorHandler>();
-		NetworkService = ServiceLocator.GetService<INetworkService>();
-		m_networkBattle = ServiceLocator.GetService<NetworkBattleController>();
 	    
 		DefaultForceMultipliers = new float[AllRigs.Length];
 		for (var i = 0; i < AllRigs.Length; i++)

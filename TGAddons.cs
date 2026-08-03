@@ -6,6 +6,7 @@ using DM;
 using Landfall.TABS;
 using Landfall.TABS.UnitEditor;
 using Landfall.TABS.Workshop;
+using LevelCreator;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -170,7 +171,8 @@ namespace TGCore
             }
             typeof(LandfallContentDatabase).GetField("m_factions", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(db, factions);
             typeof(LandfallContentDatabase).GetField("m_defaultHotbarFactionIds", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(db, defaultHotbarFactions.OrderBy(x => factions[x].index).ToList());
-
+			TGMain.NewFactions.AddRange(newFactions);
+            
             var campaigns = (Dictionary<DatabaseID, TABSCampaignAsset>)typeof(LandfallContentDatabase).GetField("m_campaigns", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(db);
             foreach (var campaign in newCampaigns.Where(campaign => campaign && campaigns != null && !campaigns.ContainsKey(campaign.Entity.GUID)))
             {
@@ -242,6 +244,30 @@ namespace TGCore
 	            nonStreamableAssets.Add(proj.Entity.GUID, proj.gameObject);
             }
             typeof(LandfallContentDatabase).GetField("m_projectiles", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(db, projectiles);
+		}
+
+		public static void AddTeamColors(UnitEditorColorPalette colorPalette)
+		{
+			if (!colorPalette) return;
+			
+			var unitEditorColorPalette = ContentDatabase.Instance().LandfallContentDatabase.GetUnitEditorColorPalette();
+			
+			var teamColors = (TeamColorPaletteData[])colorPalette.GetField("m_teamColors");
+			var colorPaletteParent =
+				(UnitEditorColorPalette.ParentCatagories[])unitEditorColorPalette.GetField("m_ColorPalleteParentCatagories");
+    
+			//Get original list of team color palette
+			var list = colorPaletteParent[1].colorPaletteCatagories[0].TeamColors.ToList();
+    
+			//Add own colors to the list from bundle's UnitEditorColorPalette file
+			list.AddRange(teamColors.ToList());
+    
+			//Override original palette with new list
+			colorPaletteParent[1].colorPaletteCatagories[0].TeamColors = list.ToArray<TeamColorPaletteData>();
+			unitEditorColorPalette.SetField("m_ColorPalleteParentCatagories", colorPaletteParent);
+    
+			//Re-Init
+			unitEditorColorPalette.Initialize();
 		}
 	}
 }

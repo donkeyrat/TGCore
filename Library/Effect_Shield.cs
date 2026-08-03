@@ -9,7 +9,13 @@ public class Effect_Shield : UnitEffectBase
     private Unit Unit;
     private UnitColorHandler ColorHandler;
     private GameStateManager m_gameStateManager;
-    private float CurrentShield;
+    private bool HealthBarEnabled;
+    private ShieldBar CurrentShieldBar;
+    
+    [HideInInspector]
+    public float currentShield;
+
+    public GameObject healthBar;
     
     public float shieldAmount = 50f;
     public float shieldDecaySpeed = 5f;
@@ -22,9 +28,9 @@ public class Effect_Shield : UnitEffectBase
     private void Update()
     {
         ModifyCurrentShield(-Time.deltaTime * shieldDecaySpeed);
-        if (CurrentShield < maxShield)
+        if (currentShield < maxShield)
         {
-            ColorHandler.SetColor(shieldColor, colorByHealthCurve.Evaluate(CurrentShield / maxShield));
+            ColorHandler.SetColor(shieldColor, colorByHealthCurve.Evaluate(currentShield / maxShield));
         }
     }
     
@@ -32,15 +38,42 @@ public class Effect_Shield : UnitEffectBase
     {
         Unit = transform.root.GetComponent<Unit>();
         ColorHandler = Unit.data.GetComponent<UnitColorHandler>();
-        m_gameStateManager = ServiceLocator.GetService<GameStateManager>();
         Unit.WasDealtDamageAction += ProtectAgainstDamage;
         
         HealForAmount(shieldAmount);
+        
+        HealthBarEnabled = ServiceLocator.GetService<GlobalSettingsHandler>()
+            .GetSettingsInstance("GAMEPLAY_HEALTHBARS").currentValue == 1;
+        var isShielded = Unit.GetComponent<ShieldBar.Shielded>();
+        switch (HealthBarEnabled)
+        {
+            case true when !isShielded:
+                CurrentShieldBar = Instantiate(healthBar).GetComponent<ShieldBar>();
+                CurrentShieldBar.Init(Unit, this);
+                break;
+            case true when isShielded:
+                CurrentShieldBar = isShielded.bar;
+                CurrentShieldBar.SetShield(this);
+                break;
+        }
     }
 
     public override void Ping()
     {
         HealForAmount(shieldAmount);
+
+        var isShielded = Unit.GetComponent<ShieldBar.Shielded>();
+        switch (HealthBarEnabled)
+        {
+            case true when !isShielded:
+                CurrentShieldBar = Instantiate(healthBar).GetComponent<ShieldBar>();
+                CurrentShieldBar.Init(Unit, this);
+                break;
+            case true when isShielded:
+                CurrentShieldBar = isShielded.bar;
+                CurrentShieldBar.SetShield(this);
+                break;
+        }
     }
 
     public void HealForAmount(float amount)
@@ -54,14 +87,14 @@ public class Effect_Shield : UnitEffectBase
 
     public void ProtectAgainstDamage(float damage)
     {
-        if (CurrentShield <= 0) return;
+        if (currentShield <= 0) return;
         Unit.data.health += Mathf.Clamp(damage, 0f, maxAbsorbedDamage);
         ModifyCurrentShield(-damage);
     }
 
     public void ModifyCurrentShield(float amount)
     {
-        CurrentShield += amount;
-        CurrentShield = Mathf.Clamp(CurrentShield, 0f, maxShield);
+        currentShield += amount;
+        currentShield = Mathf.Clamp(currentShield, 0f, maxShield);
     }
 }

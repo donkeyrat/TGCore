@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Landfall.TABS;
 using UnityEngine;
 
 namespace TGCore.Library;
@@ -8,7 +9,7 @@ public class HideRenderers : MonoBehaviour
 {
     private RendererHandler Rendering;
     
-    private void Start()
+    public void Start()
     {
         var getRendering = transform.root.GetComponent<RendererHandler>();
         if (!getRendering)
@@ -65,10 +66,13 @@ public class HideRenderers : MonoBehaviour
 
     public class RendererHandler : MonoBehaviour
     {
-        private Renderer[] BodyRenderers;
-        private Renderer[] WeaponRenderers;
+        private Unit OwnUnit;
+        public Renderer[] BodyRenderers;
+        public Renderer[] WeaponRenderers;
+        private Renderer[] SkinnedRenderers;
         private bool ShowBodyRenderers = true;
         private bool ShowWeaponRenderers = true;
+        private bool DisableSkinnedMeshes;
         
         public Dictionary<HideRenderers, bool> shouldHideBodyDict = new Dictionary<HideRenderers, bool>();
         
@@ -76,10 +80,30 @@ public class HideRenderers : MonoBehaviour
     
         private void Start()
         {
-            BodyRenderers = GetComponentsInChildren<Renderer>()
-                .Where(x => x.enabled && !x.GetComponentInParent<Weapon>() && !(x is ParticleSystemRenderer)).ToArray();
-            WeaponRenderers = GetComponentsInChildren<Renderer>()
-                .Where(x => x.enabled && x.GetComponentInParent<Weapon>() && !(x is ParticleSystemRenderer)).ToArray();
+            OwnUnit = GetComponent<Unit>();
+            
+            var bodyRenderers = GetComponentsInChildren<Renderer>(true)
+                .Where(x => ((x.enabled && x.gameObject.activeInHierarchy && x.gameObject.activeSelf)|| x.GetComponentInParent<GooglyEye>()) && !x.GetComponentInParent<Holdable>() && !(x is ParticleSystemRenderer)).ToList();
+            
+            foreach (var renderer in (List<Renderer>)GetComponent<Unit>().GetField("cachedRenderers"))
+            {
+                if (!bodyRenderers.Contains(renderer))
+                {
+                    bodyRenderers.Add(renderer);
+                }
+            }
+
+            BodyRenderers = bodyRenderers.ToArray();
+            
+            WeaponRenderers = GetComponentsInChildren<Renderer>(true)
+                .Where(x => ((x.enabled && x.gameObject.activeInHierarchy && x.gameObject.activeSelf)|| x.GetComponentInParent<GooglyEye>()) && x.GetComponentInParent<Holdable>() && !(x is ParticleSystemRenderer)).ToArray();
+            SkinnedRenderers = OwnUnit.data.GetComponentsInChildren<Renderer>()
+                .Where(x => x.enabled && x is SkinnedMeshRenderer).ToArray();
+            
+            if (GetComponentInChildren<DisableAllSkinnedClothes>())
+            {
+                DisableSkinnedMeshes = true;
+            }
         }
 
         public void UpdateHidden()
@@ -87,7 +111,6 @@ public class HideRenderers : MonoBehaviour
             var showBody = true;
             foreach (var item in shouldHideBodyDict.Where(item => !item.Value))
             {
-                Debug.Log("Wow this body is hidden....");
                 showBody = false;
             }
             if (showBody != ShowBodyRenderers) IsHidingBody(showBody);
@@ -95,7 +118,6 @@ public class HideRenderers : MonoBehaviour
             var showWeapon = true;
             foreach (var item in shouldHideWeaponsDict.Where(item => !item.Value))
             {
-                Debug.Log("Wow this weapon is hidden....");
                 showWeapon = false;
             }
             if (showWeapon != ShowWeaponRenderers) IsHidingWeapons(showWeapon);
@@ -103,24 +125,26 @@ public class HideRenderers : MonoBehaviour
 
         public void IsHidingBody(bool value)
         {
-            Debug.Log("Updating body hiding...: " + value);
             ShowBodyRenderers = value;
             foreach (var render in BodyRenderers)
-                if (render)
+            {
+                if (render && (!DisableSkinnedMeshes || (DisableSkinnedMeshes && !SkinnedRenderers.Contains(render)) || (DisableSkinnedMeshes && !value) || (DisableSkinnedMeshes && !OwnUnit.data.Dead) || (DisableSkinnedMeshes && OwnUnit.data.Dead && OwnUnit.data.healthHandler.willBeRewived)))
                 {
                     render.enabled = value;
                 }
+            }
         }
         
         public void IsHidingWeapons(bool value)
         {
-            Debug.Log("Updating weapon hiding...: " + value);
             ShowWeaponRenderers = value;
             foreach (var render in WeaponRenderers)
-                if (render)
+            {
+                if (render && (!DisableSkinnedMeshes || (DisableSkinnedMeshes && !SkinnedRenderers.Contains(render)) || (DisableSkinnedMeshes && !value)))
                 {
                     render.enabled = value;
                 }
+            }
         }
     }
 }

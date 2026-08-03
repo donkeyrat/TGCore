@@ -21,6 +21,7 @@ namespace TGCore.Library
                 var teamHolder = spawnedObject.GetComponent<TeamHolder>();
                 if (!teamHolder) teamHolder = spawnedObject.AddComponent<TeamHolder>();
                 teamHolder.team = Unit.Team;
+                teamHolder.spawner = transform.root.gameObject;
             }
         
             TrackedLimit++;

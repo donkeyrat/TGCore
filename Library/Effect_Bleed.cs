@@ -22,6 +22,7 @@ public class Effect_Bleed : UnitEffectBase
     public int maxStacks = 5;
     public UnitColorInstance bleedColor;
     public AnimationCurve colorPerStack;
+    public UnityEvent stackEvent;
     public UnityEvent tickEvent;
 
     private void Update()
@@ -63,6 +64,7 @@ public class Effect_Bleed : UnitEffectBase
     {
         if (Stacks == maxStacks || Done) return;
         
+        stackEvent.Invoke();
         Stacks++;
         TotalBleedDamage += bleedDamage;
         TotalDuration += durationPerStack;

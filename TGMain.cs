@@ -7,10 +7,15 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using DM;
 using HarmonyLib;
+using Landfall.TABS;
 using Landfall.TABS.Workshop;
+using LevelCreator;
+using TFBGames;
+using TGCore.Library;
 using TGCore.Localization;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace TGCore 
 {
@@ -25,6 +30,7 @@ namespace TGCore
 			new Harmony("TGCore").PatchAll();
 
 			StartCoroutine(InitializeMods());
+			SceneManager.sceneLoaded += OnSceneLoad;
 		}
 		
 		private IEnumerator InitializeMods()
@@ -32,6 +38,8 @@ namespace TGCore
 			yield return new WaitUntil(() => FindObjectOfType<ServiceLocator>() != null);
 
 			ServiceLocator.GetService<CustomContentLoaderModIO>().QuickRefresh(WorkshopContentType.Unit, null);
+			
+			TGAddons.AddTeamColors(tgcore.LoadAsset<UnitEditorColorPalette>("UCColorPalette"));
 
 			var languageHolder = gameObject.AddComponent<LocalizationHolder>();
 
@@ -122,13 +130,80 @@ namespace TGCore
 				}
 			}
 		}
+		
+		public void OnSceneLoad(Scene scene, LoadSceneMode loadSceneMode)
+		{
+			if (scene.name.Contains("GameScene"))
+			{
+				foreach (var obj in scene.GetRootGameObjects())
+				{
+					var hpBar = obj.transform.FindChildRecursive("HealthBar");
+					if (hpBar)
+					{
+						var fill = hpBar.FindChildRecursive("Fill").gameObject;
+						var barrierFill = Instantiate(fill, fill.transform.position, fill.transform.rotation,
+							hpBar);
+						var rect = barrierFill.GetComponent<RectTransform>();
+						rect.SetTop(-10f);
+						rect.SetBottom(15f);
+						var image = barrierFill.GetComponent<Image>();
+						image.color = Color.yellow;
+						image.fillAmount = 0f;
+						barrierFill.AddComponent<UpdateBarByBarrier>().image = image;
+					}
+				}
+			}
+			else if (scene.name.Contains("Editor Scene"))
+			{
+				var vanillaObjectTable = scene.GetRootGameObjects().Where(x => x.GetComponent<DMEditor>())
+					.Select(x => x.GetComponent<DMEditor>().editorObjectTable).ToArray()[0];
+				foreach (var objectTable in objectTables)
+				{
+					var rowValues = objectTable.GetRowValues();
+					for (var i = 0; i < rowValues.Length; i++)
+					{
+						vanillaObjectTable.AddRow(objectTable.GetKeys()[i], rowValues[i]);
+					}
+				}
+			}
+			else if (scene.name.Contains("LevelScene"))
+			{
+				var vanillaObjectTable = scene.GetRootGameObjects().Where(x => x.GetComponent<SpawnLevel>())
+					.Select(x => (DMEditorObjectTable)x.GetComponent<SpawnLevel>().GetField("editorObjectTable")).ToArray()[0];
+				foreach (var objectTable in objectTables)
+				{
+					var rowValues = objectTable.GetRowValues();
+					for (var i = 0; i < rowValues.Length; i++)
+					{
+						vanillaObjectTable.AddRow(objectTable.GetKeys()[i], rowValues[i]);
+					}
+				}
+			}
+			else if (scene.name.Contains("UnitCreator"))
+			{
+				foreach (var obj in scene.GetRootGameObjects())
+				{
+					var unitSpawner = obj.GetComponent<UnitEditorSpawnTestEnemies>();
+					if (unitSpawner)
+					{
+						var factionList = unitSpawner.factionsToSpawn.ToList();
+						factionList.AddRange(NewFactions);
+						unitSpawner.factionsToSpawn = factionList.ToArray();
+					}
+				}
+			}
+		}
+
 
 		public static TGMain instance;
+		public static AssetBundle tgcore = AssetBundle.LoadFromMemory(Properties.Resources.tgcore);
 		public static List<TGMod> modList = new List<TGMod>();
 		
 		public static ContentDatabase DB => ContentDatabase.Instance();
 		public static LandfallContentDatabase landfallDb => ContentDatabase.Instance().LandfallContentDatabase;
 		
-		public static List<SoundBank> newSounds = new List<SoundBank>(); 
+		public static List<SoundBank> newSounds = new List<SoundBank>();
+		public static List<DMEditorObjectTable> objectTables = new();
+		public static List<Faction> NewFactions = new List<Faction>();
 	}
 }

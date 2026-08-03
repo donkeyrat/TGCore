@@ -70,7 +70,7 @@ namespace TGCore.Library
 				{
 					animationDirection = SetDirection(targetRig.position + Vector3.up * upwardsModifier, animation);
 				}
-				if (Data.sinceGrounded < 0.3f)
+				if (Data.sinceGrounded < 0.3f || useInAir)
 				{
 					foreach (var rig in usedRig)
 					{
@@ -119,6 +119,7 @@ namespace TGCore.Library
 		public SpellAnimation[] animations;
 		public float upwardsModifier;
 		public float chance;
-		public bool toggled;
+		public bool toggled = true;
+		public bool useInAir;
 	}
 }

@@ -49,13 +49,10 @@ namespace TGCore.Library
             
             yield return new WaitForSeconds(swapDelay);
 
-            if (!Unit || !Unit.holdingHandler || !Unit.WeaponHandler)
-            {
-                yield break;
-            }
-
             var left = false;
             var right = false;
+            var rendering = Unit.GetComponent<HideRenderers.RendererHandler>();
+            var weaponRenderers = rendering?.WeaponRenderers.ToList();
 
             Unit.WeaponHandler.fistRefernce = null;
             
@@ -73,6 +70,15 @@ namespace TGCore.Library
                     var weaponRSpawned = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, weaponR, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>()).gameObject;
                     weaponRSpawned.GetComponent<Rigidbody>().mass *= Unit.unitBlueprint.massMultiplier;
                     right = true;
+                    if (rendering)
+                    {
+                        var renderers = weaponRSpawned.GetComponentsInChildren<Renderer>(true)
+                            .Where(x =>
+                                ((x.enabled && x.gameObject.activeInHierarchy && x.gameObject.activeSelf) ||
+                                 x.GetComponentInParent<GooglyEye>()) && x.GetComponentInParent<Holdable>() &&
+                                !(x is ParticleSystemRenderer));
+                        weaponRenderers.AddRange(renderers);
+                    }
                 }
             }
             if (weaponToSwap == SwapType.Left || weaponToSwap == SwapType.Both) 
@@ -89,10 +95,21 @@ namespace TGCore.Library
                     var weaponLSpawned = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, weaponL, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>()).gameObject;
                     weaponLSpawned.GetComponent<Rigidbody>().mass *= Unit.unitBlueprint.massMultiplier;
                     left = true;
+                    if (rendering)
+                    {
+                        var renderers = weaponLSpawned.GetComponentsInChildren<Renderer>(true)
+                            .Where(x =>
+                                ((x.enabled && x.gameObject.activeInHierarchy && x.gameObject.activeSelf) ||
+                                 x.GetComponentInParent<GooglyEye>()) && x.GetComponentInParent<Holdable>() &&
+                                !(x is ParticleSystemRenderer));
+                        weaponRenderers.AddRange(renderers);
+                    }
                 }
                     
                 else if (Unit.unitBlueprint.holdinigWithTwoHands) Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
             }
+
+            if (rendering) rendering.WeaponRenderers = weaponRenderers.ToArray();
 
             if ((left && right) || right)
             {

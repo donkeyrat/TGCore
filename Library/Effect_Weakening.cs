@@ -1,109 +1,138 @@
-﻿using Landfall.TABS;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Landfall.TABS;
 using UnityEngine;
 
 namespace TGCore.Library
 {
     public class Effect_Weakening : UnitEffectBase
     {
+        private float Counter;
         private int WeakenCount;
+        private Unit OwnUnit;
+        private DragHandler DragHandler;
+        private UnitColorHandler ColorHandler;
+        private RigidbodyHolder RigHolder;
+        private float CurrentColorValue;
+        private Dictionary<Weapon, float> WeaponCooldownDictionary = new();
         
-        public float dragMultiplier;
-
-        public float speedMultiplier;
-
-        public Material mat;
+        public float maxDuration = 10f;
+        
+        public float dragPerStack = 5f;
+        public float dragDecay = 1f;
+        public float attackSlowPerStack = 1.25f;
+        public float attackSlowDecay = 0.03f;
 
         public UnitColorInstance color;
+        public float colorMultiplier = 0.4f;
+        public float colorDecay = 0.05f;
         
         public int weakenLimit = 6;
         
         public override void DoEffect()
         {
-            Ping();
+            OwnUnit = transform.root.GetComponent<Unit>();
+            DragHandler = OwnUnit?.data.GetComponent<DragHandler>();
+            ColorHandler = OwnUnit?.data.GetComponent<UnitColorHandler>();
+            RigHolder = OwnUnit?.data.GetComponent<RigidbodyHolder>();
+            
+            if (!OwnUnit || !DragHandler || !RigHolder || OwnUnit.data.immunityForSeconds > 0f)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            AddWeaponsToDict();
+            TriggerEffect();
         }
 
         public override void Ping()
         {
-            var blueprint = transform.root.GetComponent<Unit>().unitBlueprint;
-            if (blueprint.Name.Contains("One Punch Man") || blueprint.Name.Contains("Seraphim") ||
-                transform.root.name == "AFTERIMAGE")
-            {
-                Destroy(gameObject);
-            }
-            WeakenCount++;
-            
-            if (weakenLimit > WeakenCount) WeakenUnit();
+            if (Counter > maxDuration) return;
+            AddWeaponsToDict();
+            TriggerEffect();
         }
 
-        public void WeakenUnit()
+        private void TriggerEffect()
         {
-            var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
+            if (WeakenCount < weakenLimit)
+            {
+                WeakenCount++;
+            }
+            
+            var drag = RigHolder.AllDrags;
             for (var i = 0; i < drag.Length; i++)
             {
-                drag[i].x *= dragMultiplier;
-                drag[i].y *= dragMultiplier;
+                drag[i].x = RigHolder.defaultDrags[i].x + dragPerStack * WeakenCount;
+                drag[i].y = RigHolder.defaultDrags[i].y + dragPerStack * WeakenCount;
             }
+            DragHandler.UpdateDrag();
+
+            foreach (var weapon in WeaponCooldownDictionary)
+            {
+                weapon.Key.internalCooldown = weapon.Value * (1 + attackSlowPerStack * WeakenCount);
+            }
+
+            CurrentColorValue = (float)WeakenCount / weakenLimit;
+        }
+
+        private void Update()
+        {
+            Counter += Time.deltaTime;
+            if (OwnUnit.data.Dead) return;
             
-            if (transform.root.GetComponentInChildren<DragHandler>()) transform.root.GetComponentInChildren<DragHandler>().UpdateDrag();
-            
-            if (transform.root.GetComponent<Unit>().WeaponHandler && transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon)
+            for (var i = 0; i < RigHolder.AllDrags.Length; i++)
             {
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.internalCooldown /= speedMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.levelMultiplier *= damageMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.gameObject.FetchComponent<Level>().levelMultiplier *= damageMultiplier;
-            }
-            if (transform.root.GetComponent<Unit>().WeaponHandler && transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon)
-            {
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.internalCooldown /= speedMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.levelMultiplier *= damageMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.gameObject.FetchComponent<Level>().levelMultiplier *= damageMultiplier;
-            }
-            if (transform.root.GetComponentInChildren<HoldingHandlerMulti>())
-            {
-                foreach (var weapon in transform.root.GetComponentInChildren<HoldingHandlerMulti>().spawnedWeapons)
+                if (RigHolder.AllDrags[i].x > RigHolder.defaultDrags[i].x)
                 {
-                    weapon.GetComponent<Weapon>().internalCooldown /= speedMultiplier;
-                    weapon.GetComponent<Weapon>().levelMultiplier *= damageMultiplier;
-                    weapon.FetchComponent<Level>().levelMultiplier *= damageMultiplier;
+                    RigHolder.AllDrags[i].x -= Time.deltaTime * dragDecay;
+                }
+                if (RigHolder.AllDrags[i].y > RigHolder.defaultDrags[i].y)
+                {
+                    RigHolder.AllDrags[i].y -= Time.deltaTime * dragDecay;
+                }
+            }
+            DragHandler.UpdateDrag();
+
+            foreach (var weapon in WeaponCooldownDictionary)
+            {
+                if (weapon.Key.internalCooldown > weapon.Value)
+                {
+                    weapon.Key.internalCooldown -= Time.deltaTime * attackSlowDecay;
                 }
             }
             
-            if (mat) transform.root.GetComponentInChildren<UnitColorHandler>().SetMaterial(mat);
-            
-            if (color.colorName != "") transform.root.GetComponentInChildren<UnitColorHandler>().SetColor(color, 1f);
+            if (color.colorName != "")
+            {
+                CurrentColorValue = Mathf.Clamp(CurrentColorValue - colorDecay * Time.deltaTime, 0f, 1f);
+                ColorHandler.SetColor(color, CurrentColorValue * colorMultiplier);
+            }
         }
 
-        public void OnDestroy()
+        private void AddWeaponsToDict()
         {
-            var drag = transform.root.GetComponentInChildren<RigidbodyHolder>().AllDrags;
-            for (var i = 0; i < drag.Length; i++) 
+            if (OwnUnit.WeaponHandler)
             {
-                drag[i].x /= dragMultiplier;
-                drag[i].y /= dragMultiplier;
-            }
-            if (transform.root.GetComponentInChildren<DragHandler>()) {
-                
-                transform.root.GetComponentInChildren<DragHandler>().UpdateDrag();
-            }
-            if (transform.root.GetComponent<Unit>().WeaponHandler && transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon) {
-                
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.internalCooldown *= speedMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.levelMultiplier /= damageMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.rightWeapon.gameObject.FetchComponent<Level>().levelMultiplier /= damageMultiplier;
-            }
-            if (transform.root.GetComponent<Unit>().WeaponHandler && transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon) {
-                
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.internalCooldown *= speedMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.levelMultiplier /= damageMultiplier;
-                transform.root.GetComponent<Unit>().WeaponHandler.leftWeapon.gameObject.FetchComponent<Level>().levelMultiplier /= damageMultiplier;
-            }
-            if (transform.root.GetComponentInChildren<HoldingHandlerMulti>()) {
-                
-                foreach (var weapon in transform.root.GetComponentInChildren<HoldingHandlerMulti>().spawnedWeapons)
+                var rightWeapon = OwnUnit.WeaponHandler.rightWeapon;
+                if (rightWeapon && !WeaponCooldownDictionary.ContainsKey(rightWeapon))
                 {
-                    weapon.GetComponent<Weapon>().internalCooldown *= speedMultiplier;
-                    weapon.GetComponent<Weapon>().levelMultiplier /= damageMultiplier;
-                    weapon.FetchComponent<Level>().levelMultiplier /= damageMultiplier;
+                    WeaponCooldownDictionary.Add(rightWeapon, rightWeapon.internalCooldown);
+                    rightWeapon.internalCooldown *= 1 + attackSlowPerStack * WeakenCount;
+                }
+                var leftWeapon = OwnUnit.WeaponHandler.leftWeapon;
+                if (leftWeapon && !WeaponCooldownDictionary.ContainsKey(leftWeapon))
+                {
+                    WeaponCooldownDictionary.Add(leftWeapon, leftWeapon.internalCooldown);
+                    rightWeapon.internalCooldown *= 1 + attackSlowPerStack * WeakenCount;
+                }
+            }
+            else if (OwnUnit.data.GetComponent<HoldingHandlerMulti>())
+            {
+                foreach (var weaponObject in OwnUnit.data.GetComponent<HoldingHandlerMulti>().spawnedWeapons.Where(x => x && !WeaponCooldownDictionary.ContainsKey(x.GetComponent<Weapon>())))
+                {
+                    var weapon = weaponObject.GetComponent<Weapon>();
+                    WeaponCooldownDictionary.Add(weapon, weapon.internalCooldown);
+                    weapon.internalCooldown *= 1 + attackSlowPerStack * WeakenCount;
                 }
             }
         }

@@ -39,7 +39,7 @@ namespace TGCore.Library
             spawnedWeapons.Add(weapon);
             
             if (handSlot.GetComponent<HandLeft>()) leftWeapons.Add(weapon);
-            else RightWeapons.Add(weapon);
+            else rightWeapons.Add(weapon);
             
             var rigidbody = handSlot.GetComponent<Rigidbody>();
             var holdable = weapon.GetComponent<Holdable>();
@@ -180,7 +180,7 @@ namespace TGCore.Library
             }
             spawnedWeapons.Clear();
             leftWeapons.Clear();
-            RightWeapons.Clear();
+            rightWeapons.Clear();
         }
 
         public void LetGoOfSpecific(HoldingHandler.HandType handType, bool destroy = false)
@@ -209,9 +209,9 @@ namespace TGCore.Library
 
                 foreach (var joint in RightJoints) { Destroy(joint); }
                 RightJoints.Clear();
-                if (RightWeapons.Count > 0)
+                if (rightWeapons.Count > 0)
                 {
-                    foreach (var weapon in RightWeapons)
+                    foreach (var weapon in rightWeapons)
                     {
                         if (weapon != null)
                         {
@@ -220,7 +220,7 @@ namespace TGCore.Library
                             if (destroy) { Destroy(weapon); }
                         }
                     }
-                    RightWeapons.Clear();
+                    rightWeapons.Clear();
                 }
             }
         }
@@ -278,7 +278,8 @@ namespace TGCore.Library
         [HideInInspector]
         public List<GameObject> leftWeapons = new List<GameObject>();
 
-        private readonly List<GameObject> RightWeapons = new List<GameObject>();
+        [HideInInspector]
+        public List<GameObject> rightWeapons = new List<GameObject>();
 
         private readonly List<GameObject> ExistingWeapons = new List<GameObject>();
 

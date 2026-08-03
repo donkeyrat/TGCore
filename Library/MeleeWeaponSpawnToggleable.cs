@@ -10,6 +10,7 @@ namespace TGCore.Library
         private void Start()
         {
             Rig = GetComponent<Rigidbody>();
+            MeleeWeapon = GetComponent<MeleeWeapon>();
             TeamHolder.GetTeamRelevantComponents(transform, ref Unit, ref RootTeamHolder);
             
             if (!startOnCooldown) Counter = cooldown;
@@ -23,7 +24,7 @@ namespace TGCore.Library
         private void OnCollisionEnter(Collision collision)
         {
             if (Counter < cooldown || !toggled || collision.collider.transform.root == transform.root ||
-                !objectToSpawn) return;
+                !objectToSpawn || (MeleeWeapon && useWeaponToToggle && !MeleeWeapon.isSwinging)) return;
 
             var num = 0f;
             if (Rig)
@@ -49,8 +50,17 @@ namespace TGCore.Library
                     return;
                 case CollisionTarget.EnemyUnits:
                 {
-                    var enemyUnit = collision.transform.root.GetComponent<Unit>();
-                    if (!enemyUnit || (RootTeamHolder && RootTeamHolder.team == enemyUnit.Team) || (Unit && Unit.Team == enemyUnit.Team))
+                    var hitUnit = collision.transform.root.GetComponent<Unit>();
+                    if (!hitUnit || (RootTeamHolder && RootTeamHolder.team == hitUnit.Team) || (Unit && Unit.Team == hitUnit.Team))
+                    {
+                        return;
+                    }
+                    break;
+                }
+                case CollisionTarget.EnemyUnitsOrStatic:
+                {
+                    var hitUnit = collision.transform.root.GetComponent<Unit>();
+                    if ((collision.rigidbody && !hitUnit) || (hitUnit && RootTeamHolder && RootTeamHolder.team == hitUnit.Team) || (hitUnit && Unit && Unit.Team == hitUnit.Team))
                     {
                         return;
                     }
@@ -108,7 +118,8 @@ namespace TGCore.Library
             Static = 1,
             Units = 2,
             Rigidbodies = 3,
-            EnemyUnits = 4
+            EnemyUnits = 4,
+            EnemyUnitsOrStatic
         }
         
         public enum Rot
@@ -130,6 +141,7 @@ namespace TGCore.Library
         private Unit Unit;
         private Rigidbody Rig;
         private TeamHolder RootTeamHolder;
+        private MeleeWeapon MeleeWeapon;
 
         public bool toggled = true;
         
@@ -144,5 +156,6 @@ namespace TGCore.Library
         public bool startOnCooldown;
 
         public UnityEvent spawnEvent;
+        public bool useWeaponToToggle;
     }
 }

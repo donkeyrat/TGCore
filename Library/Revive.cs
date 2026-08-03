@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -36,7 +37,7 @@ namespace TGCore.Library
                 foreach (var script in addRigidbodyOnDeath)
                 {
                     Unit.data.healthHandler.RemoveDieAction(script.Die);
-                    Destroy(script);
+                    //Destroy(script);
                 }
             }
             
@@ -46,7 +47,7 @@ namespace TGCore.Library
                 foreach (var script in sinkOnDeath)
                 {
                     Unit.data.healthHandler.RemoveDieAction(script.Sink);
-                    Destroy(script);
+                    //Destroy(script);
                 }
             }
             
@@ -56,17 +57,40 @@ namespace TGCore.Library
                 foreach (var script in removeJointsOnDeath)
                 {
                     Unit.data.healthHandler.RemoveDieAction(script.Die);
-                    Destroy(script);
+                    //Destroy(script);
                 }
             }
             
-            var disableAllSkinnedClothes = Unit.GetComponentsInChildren<DisableAllSkinnedClothes>();
-            if (disableAllSkinnedClothes.Length > 0)
+            var deathEvents = Unit.GetComponentsInChildren<DeathEvent>();
+            if (deathEvents.Length > 0)
             {
-                foreach (var script in disableAllSkinnedClothes)
+                foreach (var script in deathEvents)
                 {
-                    Unit.data.healthHandler.RemoveDieAction(script.DoIt);
-                    Destroy(script);
+                    Unit.data.healthHandler.RemoveDieAction(script.Die);
+                    //Destroy(script);
+                }
+            }
+            
+            var skeletonDeathAction = Unit.GetComponentsInChildren<SkeletonDeathAction>();
+            if (skeletonDeathAction.Length > 0)
+            {
+                foreach (var script in skeletonDeathAction)
+                {
+                    MethodInfo method = typeof(SkeletonDeathAction).GetMethod(
+                        "OnDeathAction",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                    if (method != null)
+                    {
+                        Action handler = (Action)Delegate.CreateDelegate(
+                            typeof(Action),
+                            script,
+                            method);
+                        
+                        Unit.data.healthHandler.RemoveDieAction(handler);
+                    }
+                    //Destroy(script);
                 }
             }
         }
@@ -91,15 +115,19 @@ namespace TGCore.Library
             
             yield return new WaitForSeconds(reviveDelay);
             
-            Unit.data.Dead = false;
-            Unit.dead = false;
-            Unit.data.hasBeenRevived = true;
-            Unit.data.healthHandler.willBeRewived = false;
-            
             Unit.data.ragdollControl = 1f;
             Unit.data.muscleControl = 1f;
             
             Unit.data.health = Unit.data.maxHealth * reviveHealthMultiplier;
+            
+            var addRigidbodyOnDeath = Unit.GetComponentsInChildren<AddRigidbodyOnDeath>();
+            if (addRigidbodyOnDeath.Length > 0)
+            {
+                foreach (var script in addRigidbodyOnDeath)
+                {
+                    Unit.data.healthHandler.AddDieAction(script.Die);
+                }
+            }
 
             if (Unit.WeaponHandler && letGoOfWeapons)
             {
@@ -110,23 +138,11 @@ namespace TGCore.Library
                     
                     if (holdWithTwoHands) Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
                 }
-                else if (useWeaponsAfterRevive && RightWeaponOriginal)
-                {
-                    var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, RightWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Right, Unit.data.mainRig.rotation, new List<GameObject>());
-                    weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
-                    
-                    if (holdWithTwoHands) Unit.holdingHandler.leftHandActivity = HoldingHandler.HandActivity.HoldingRightObject;
-                }
                 if (!holdWithTwoHands)
                 {
                     if (leftWeaponToSpawn)
                     {
                         var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, leftWeaponToSpawn, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
-                        weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
-                    }
-                    else if (useWeaponsAfterRevive && LeftWeaponOriginal)
-                    {
-                        var weapon = Unit.unitBlueprint.SetWeapon(Unit, Unit.Team, LeftWeaponOriginal, new PropItemData(), HoldingHandler.HandType.Left, Unit.data.mainRig.rotation, new List<GameObject>());
                         weapon.rigidbody.mass *= Unit.unitBlueprint.massMultiplier;
                     }
                 }
@@ -140,7 +156,7 @@ namespace TGCore.Library
                         sec.shrink = true;
                         sec.seconds = removeWeaponsAfterSeconds;
                     }
-                    else if (removeWeaponsAfterSeconds < 0f) Destroy(RightWeaponOriginal);
+                    else Destroy(RightWeaponOriginal);
                 }
                 if (LeftWeaponOriginal)
                 {
@@ -151,21 +167,24 @@ namespace TGCore.Library
                         sec.shrink = true;
                         sec.seconds = removeWeaponsAfterSeconds;
                     }
-                    else if (removeWeaponsAfterSeconds < 0f) Destroy(LeftWeaponOriginal);
+                    else Destroy(LeftWeaponOriginal);
                 }
             }
 
-            var conditionalEvents = Unit.GetComponentsInChildren<ConditionalEvent>();
-            if (conditionalEvents.Length > 0)
+            if (!disableAbilitiesAfterRevive)
             {
-                foreach (var ability in conditionalEvents)
+                var conditionalEvents = Unit.GetComponentsInChildren<ConditionalEvent>();
+                if (conditionalEvents.Length > 0)
                 {
-                    var field = typeof(ConditionalEvent).GetField("done", (BindingFlags)(-1));
-                    if (field != null)
+                    foreach (var ability in conditionalEvents.Where(x =>
+                                 x.events.Length > 0 && x.events[0].conditions
+                                     .Where(x => x.conditionType == EventCondition.ConditionType.UnitDeath).ToArray()
+                                     .Length <= 0))
                     {
-                        field.SetValue(ability, false);
+                        var field = typeof(ConditionalEvent).GetField("done", (BindingFlags)(-1));
+                        field?.SetValue(ability, false);
                     }
-                }
+                } 
             }
             
             foreach (var ability in reviveAbilities)
@@ -184,23 +203,46 @@ namespace TGCore.Library
                 }
             }
             
-            if (Unit.unitBlueprint.MovementComponents != null && Unit.unitBlueprint.MovementComponents.Count > 0)
+            Unit.data.Dead = false;
+            Unit.dead = false;
+            Unit.data.hasBeenRevived = true;
+            Unit.data.healthHandler.willBeRewived = false;
+            
+            var sinkOnDeath = Unit.GetComponentsInChildren<SinkOnDeath>();
+            if (sinkOnDeath.Length > 0)
             {
-                foreach (var mov in Unit.unitBlueprint.MovementComponents)
+                foreach (var script in sinkOnDeath)
                 {
-                    var mi = (MethodInfo)typeof(UnitAPI).GetMethod("CreateGenericRemoveComponentData", (BindingFlags)(-1)).Invoke(Unit.api, new object[] { mov.GetType() });
-                    mi.Invoke(Unit.GetComponent<GameObjectEntity>().EntityManager, new object[] { Unit.GetComponent<GameObjectEntity>().Entity });
+                    Unit.data.healthHandler.AddDieAction(script.Sink);
                 }
             }
             
-            Unit.data.healthHandler.deathEvent.RemoveAllListeners();
-            foreach (var rigidbodyOnDeath in Unit.GetComponentsInChildren<AddRigidbodyOnDeath>()) {
-
-                Unit.data.healthHandler.RemoveDieAction(rigidbodyOnDeath.Die);
+            var removeJointsOnDeath = Unit.GetComponentsInChildren<RemoveJointsOnDeath>();
+            if (removeJointsOnDeath.Length > 0)
+            {
+                foreach (var script in removeJointsOnDeath)
+                {
+                    Unit.data.healthHandler.AddDieAction(script.Die);
+                }
             }
-            foreach (var deathEvent in Unit.GetComponentsInChildren<DeathEvent>()) {
-
-                Unit.data.healthHandler.RemoveDieAction(deathEvent.Die);
+            
+            var skeletonDeathAction = Unit.GetComponentsInChildren<SkeletonDeathAction>();
+            if (skeletonDeathAction.Length > 0)
+            {
+                foreach (var script in skeletonDeathAction)
+                {
+                    MethodInfo method = typeof(SkeletonDeathAction).GetMethod(
+                        "OnDeathAction",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (method != null)
+                    {
+                        Action handler = (Action)Delegate.CreateDelegate(
+                            typeof(Action),
+                            script,
+                            method);
+                        Unit.data.healthHandler.AddDieAction(handler);
+                    }
+                }
             }
             
             ServiceLocator.GetService<UnitHealthbars>().HandleUnitSpawned(Unit);
@@ -232,11 +274,11 @@ namespace TGCore.Library
 
         [Header("Weapon Settings")] 
         
+        public bool disableAbilitiesAfterRevive;
+        
         public List<GameObject> reviveAbilities;
         
         public bool letGoOfWeapons;
-
-        public bool useWeaponsAfterRevive = true;
         
         public GameObject rightWeaponToSpawn;
         

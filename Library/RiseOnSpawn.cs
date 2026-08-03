@@ -46,9 +46,9 @@ namespace TGCore.Library
 
         public float time = 2f;
 
-        public float moveMultiplier = 0.6f;
+        public float moveMultiplier = 25f;
 
-        public bool setRigsKinematic;
+        public bool setRigsKinematic = true;
         
         public bool setArmsKinematic;
     }

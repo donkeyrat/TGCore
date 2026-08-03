@@ -1,11 +1,13 @@
 ﻿using Landfall.TABS;
+using UnityEngine.Events;
 
 namespace TGCore.Library;
 
 public class ProjectileDmgFromHealth : ProjectileHitEffect
 {
     private TeamHolder TeamHolder;
-    
+
+    public UnityEvent hitEvent;
     public float damage;
     public float healthThreshold;
 
@@ -20,7 +22,8 @@ public class ProjectileDmgFromHealth : ProjectileHitEffect
         
         if (rootUnit && rootUnit.data.health / rootUnit.data.maxHealth <= healthThreshold)
         {
-            rootUnit.data.healthHandler.TakeDamage(damage, transform.forward, TeamHolder.spawner.GetComponentInParent<Unit>());
+            rootUnit.data.healthHandler.TakeDamage(damage, transform.forward, TeamHolder ? TeamHolder.spawner.GetComponentInParent<Unit>() : null);
+            hitEvent.Invoke();
         }
 
         return false;

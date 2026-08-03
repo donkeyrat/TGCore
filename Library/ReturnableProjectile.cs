@@ -7,13 +7,20 @@ namespace TGCore.Library
     {
         private void Start()
         {
-            Weapon = GetComponent<TeamHolder>().spawnerWeapon;
+            var teamHolder = GetComponent<TeamHolder>();
+            if (!teamHolder)
+            {
+                return;
+            }
+            
+            Weapon = teamHolder.spawnerWeapon;
             Stick = GetComponent<ProjectileStick>();
             ReturnObject = Weapon.transform.FindChildRecursive(objectToReturnTo);
         }
         
         public void Return()
         {
+            if (!Weapon) return;
             StartCoroutine(DoReturn());
         }
 
@@ -33,15 +40,13 @@ namespace TGCore.Library
                 yield return null;
             }
 
-            var delay = Weapon.GetComponent<DelayEvent>();
-            if (delay) delay.Go();
+            var returnEvent = Weapon.GetComponent<ReturnableProjectileEvent>();
+            if (returnEvent) returnEvent.Go();
             Destroy(gameObject);
         }
 
         private Transform ReturnObject;
-
         private GameObject Weapon;
-
         private ProjectileStick Stick;
 
         public string objectToReturnTo;

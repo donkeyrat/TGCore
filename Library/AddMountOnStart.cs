@@ -10,6 +10,8 @@ namespace TGCore.Library
     {
         private void Start()
         {
+            if (GetComponent<RiderHolder>()) return;
+            
             foreach (var pos in mountPositions) pos.SetActive(true);
             
             var ownUnit = GetComponent<Unit>();

@@ -56,8 +56,14 @@ namespace TGCore.Library
 					}
 					if (SkinnedMeshRend)
 					{
-						var shape = GetComponent<ParticleSystem>().shape;
+						var shape = Part.shape;
 						shape.skinnedMeshRenderer = SkinnedMeshRend;
+						if (transform.root.gameObject.name.Contains("IceGiant"))
+						{
+							var main = Part.main;
+							main.startSizeMultiplier = 0.005f;
+							main.startSpeedMultiplier = 0.005f;
+						}
 					
 						findEvent.Invoke();
 						if (play) Part.Play();

@@ -5,35 +5,70 @@ namespace TGCore.Library
 {
     public class AddDamageToUnitPart : MonoBehaviour
 	{
+		private CollisionWeapon NewDamage;
+		private CollisionWeaponToggleable NewToggleableDamage;
+		private CollisionSound NewSound;
+		private MeleeWeaponAddEffect NewEffect;
+		private MeleeWeaponSpawn NewSpawn;
+		private MeleeWeaponSpawnToggleable NewToggleableSpawn;
+		private Unit OwnUnit;
+		
+		public enum BodyTarget
+		{
+			Head,
+			RightFoot,
+			LeftFoot,
+			RightHand,
+			LeftHand,
+			MainRig,
+			Hip,
+			MainWeapon
+		}
+		
+		public BodyTarget bodyTarget;
+		public bool destroyOnFail;
+		
 		private void Start()
 		{
 			OwnUnit = transform.root.GetComponent<Unit>();
 
-			GameObject chosenPart;
+			GameObject chosenPart = null;
 			switch (bodyTarget)
 			{
 				case BodyTarget.Head:
-					chosenPart = OwnUnit.data.head.gameObject;
+					if (OwnUnit.data.head) chosenPart = OwnUnit.data.head.gameObject;
 					break;
 				case BodyTarget.LeftFoot:
-					chosenPart = OwnUnit.data.footLeft.gameObject;
+					if (OwnUnit.data.footLeft) chosenPart = OwnUnit.data.footLeft.gameObject;
 					break;
 				case BodyTarget.RightFoot:
-					chosenPart = OwnUnit.data.footRight.gameObject;
+					if (OwnUnit.data.footRight)chosenPart = OwnUnit.data.footRight.gameObject;
 					break;
 				case BodyTarget.LeftHand:
-					chosenPart = OwnUnit.data.leftHand.gameObject;
+					if (OwnUnit.data.leftHand) chosenPart = OwnUnit.data.leftHand.gameObject;
 					break;
 				case BodyTarget.RightHand:
-					chosenPart = OwnUnit.data.rightHand.gameObject;
+					if (OwnUnit.data.rightHand) chosenPart = OwnUnit.data.rightHand.gameObject;
 					break;
 				case BodyTarget.Hip:
-					chosenPart = OwnUnit.data.hip.gameObject;
+					if (OwnUnit.data.hip) chosenPart = OwnUnit.data.hip.gameObject;
+					break;
+				case BodyTarget.MainWeapon:
+					if (OwnUnit.WeaponHandler && (OwnUnit.WeaponHandler.rightWeapon || OwnUnit.WeaponHandler.leftWeapon))
+					{
+						chosenPart = OwnUnit.WeaponHandler.rightWeapon ? OwnUnit.WeaponHandler.rightWeapon.gameObject : OwnUnit.WeaponHandler.leftWeapon.gameObject;
+					}
 					break;
 				case BodyTarget.MainRig:
 				default:
 					chosenPart = OwnUnit.data.mainRig.gameObject;
 					break;
+			}
+
+			if (!chosenPart)
+			{
+				if (destroyOnFail) Destroy(gameObject);
+				return;
 			}
 			
 			var ownDamage = GetComponent<CollisionWeapon>();
@@ -51,6 +86,8 @@ namespace TGCore.Library
 				NewDamage.onlyCollideWithRigs = true;
 				NewDamage.dealDamageEvent = ownDamage.dealDamageEvent;
 				NewDamage.callEffectsOn = ownDamage.callEffectsOn;
+				NewDamage.playSoundWhenHitNonRigidbodies = ownDamage.playSoundWhenHitNonRigidbodies;
+				NewDamage.screenShakeMultiplier = ownDamage.screenShakeMultiplier;
 				Destroy(ownDamage);
 			}
 			
@@ -69,6 +106,9 @@ namespace TGCore.Library
 				NewToggleableDamage.dealDamageEvent = ownToggleable.dealDamageEvent;
 				NewToggleableDamage.canDealDamage = ownToggleable.canDealDamage;
 				NewToggleableDamage.callEffectsOn = ownToggleable.callEffectsOn;
+				NewToggleableDamage.playSoundWhenHitNonRigidbodies = ownToggleable.playSoundWhenHitNonRigidbodies;
+				NewToggleableDamage.screenShakeMultiplier = ownToggleable.screenShakeMultiplier;
+				NewToggleableDamage.canDealDamage = ownToggleable.canDealDamage;
 				Destroy(ownToggleable);
 			}
 			
@@ -78,6 +118,7 @@ namespace TGCore.Library
 				NewSound = chosenPart.AddComponent<CollisionSound>();
 				NewSound.SoundEffectRef = ownSound.SoundEffectRef;
 				NewSound.multiplier = ownSound.multiplier;
+				NewSound.onlySoundOnRig = ownSound.onlySoundOnRig;
 				Destroy(ownSound);
 			}
 
@@ -101,15 +142,33 @@ namespace TGCore.Library
 				NewSpawn.SpawnEvent = ownSpawn.SpawnEvent;
 				Destroy(ownSpawn);
 			}
+			
+			var ownSpawnToggleable = GetComponent<MeleeWeaponSpawnToggleable>();
+			if (ownSpawnToggleable)
+			{
+				NewToggleableSpawn = chosenPart.AddComponent<MeleeWeaponSpawnToggleable>();
+				NewToggleableSpawn.objectToSpawn = ownSpawnToggleable.objectToSpawn;
+				NewToggleableSpawn.pos = ownSpawnToggleable.pos;
+				NewToggleableSpawn.rot = ownSpawnToggleable.rot;
+				NewToggleableSpawn.cooldown = ownSpawnToggleable.cooldown;
+				NewToggleableSpawn.spawnEvent = ownSpawnToggleable.spawnEvent;
+				NewToggleableSpawn.impactMultiplier = ownSpawnToggleable.impactMultiplier;
+				NewToggleableSpawn.startOnCooldown = ownSpawnToggleable.startOnCooldown;
+				NewToggleableSpawn.useWeaponToToggle = ownSpawnToggleable.useWeaponToToggle;
+				NewToggleableSpawn.collisionTarget = ownSpawnToggleable.collisionTarget;
+				NewToggleableSpawn.toggled = ownSpawnToggleable.toggled;
+				Destroy(ownSpawn);
+			}
 		}
 
 		public void RemoveDamage()
 		{
 			if (NewDamage) Destroy(NewDamage);
-			if (NewToggleableDamage) Destroy(NewDamage);
+			if (NewToggleableDamage) Destroy(NewToggleableDamage);
 			if (NewSound) Destroy(NewSound);
 			if (NewEffect) Destroy(NewEffect);
 			if (NewSpawn) Destroy(NewSpawn);
+			if (NewToggleableSpawn) Destroy(NewToggleableSpawn);
 		}
 
 		public void Release()
@@ -122,30 +181,15 @@ namespace TGCore.Library
 		{
 			if (NewToggleableDamage) NewToggleableDamage.SetCanDealDamage(value);
 		}
+		
+		public void SetCanSpawn(bool value)
+		{
+			if (NewToggleableSpawn) NewToggleableSpawn.Toggle(value);
+		}
 	
 		private void OnDestroy()
 		{
 			RemoveDamage();
 		}
-		
-		private CollisionWeapon NewDamage;
-		private CollisionWeaponToggleable NewToggleableDamage;
-		private CollisionSound NewSound;
-		private MeleeWeaponAddEffect NewEffect;
-		private MeleeWeaponSpawn NewSpawn;
-		private Unit OwnUnit;
-		
-		public enum BodyTarget
-		{
-			Head,
-			RightFoot,
-			LeftFoot,
-			RightHand,
-			LeftHand,
-			MainRig,
-			Hip
-		}
-		
-		public BodyTarget bodyTarget;
 	}
 }

@@ -19,7 +19,9 @@ public class RotateRigUp : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (OwnUnit.data.isGrounded)
+        if (!Rig) return;
+        
+        if (OwnUnit.data.isGrounded && !OwnUnit.data.Dead)
         {
             var fromTo = Quaternion.FromToRotation(Rig.transform.up, Vector3.up);
             fromTo.ToAngleAxis(out var angle, out var axis);

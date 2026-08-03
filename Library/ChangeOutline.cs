@@ -20,6 +20,6 @@ namespace TGCore.Library
         public Color outlineColor = Color.white;
 
         [Range(0f, 10f)]
-        public float outlineWidth = 1f;
+        public float outlineWidth = 2f;
     }
 }

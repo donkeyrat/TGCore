@@ -9,31 +9,21 @@ namespace TGCore.Library
 {
     public class Effect_Disintegrate : UnitEffectBase
     {
-        private void Awake()
-        {
-            OwnUnit = transform.root.GetComponent<Unit>();
-            ColorHandler = OwnUnit.data.GetComponent<UnitColorHandler>();
-        }
-        
         public override void DoEffect()
         {
             OwnUnit = transform.root.GetComponent<Unit>();
-            ColorHandler = OwnUnit.data.GetComponent<UnitColorHandler>();
+            HideRenderers = GetComponent<HideRenderers>();
             
-            StartCoroutine(AddEffect());
+            AddEffect();
         }
 
         public override void Ping()
         {
-            StartCoroutine(AddEffect());
+            AddEffect();
         }
 
-        private IEnumerator AddEffect()
+        private void AddEffect()
         {
-            yield return new WaitForSeconds(effectDelay);
-            
-            if (!OwnUnit) yield break;
-            
             OwnUnit.data.healthHandler.TakeDamage(damage, Vector3.zero);
             
             if (OwnUnit.data.Dead || alwaysDestroy) StartCoroutine(DestroyUnit());
@@ -48,7 +38,7 @@ namespace TGCore.Library
                 
             yield return new WaitForSeconds(destroyDelay);
                 
-            ColorHandler.SetMaterial(mat);
+            HideRenderers.HideAll();
 
             if (destroyRoot)
             {
@@ -61,10 +51,8 @@ namespace TGCore.Library
         }
 
         private Unit OwnUnit;
-
-        private UnitColorHandler ColorHandler;
-
         private bool Destroying;
+        private HideRenderers HideRenderers;
 
         public float damage;
 
@@ -75,9 +63,5 @@ namespace TGCore.Library
         public bool alwaysDestroy;
 
         public float destroyDelay;
-
-        public float effectDelay = 0.01f;
-        
-        public Material mat;
     }
 }

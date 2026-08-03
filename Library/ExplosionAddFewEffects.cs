@@ -33,6 +33,7 @@ public class ExplosionAddFewEffects : MonoBehaviour
     public UnitEffectBase effect;
 
     public float freezeAmount;
+    public bool ignoreDead;
     public int maxEffectsToAdd = 5;
     
     private void Start()
@@ -64,7 +65,8 @@ public class ExplosionAddFewEffects : MonoBehaviour
             if ((hitUnit.Team == Unit.Team && ignoreTeamMates) ||
                 (hitUnit.Team != Unit.Team && onlyTeamMates) ||
                 (hitUnit == Unit && ignoreRoot) ||
-                (hitUnit != Unit && onlyRoot))
+                (hitUnit != Unit && onlyRoot) ||
+                (hitUnit.data.Dead && ignoreDead))
             {
                 continue;
             }
@@ -101,7 +103,11 @@ public class ExplosionAddFewEffects : MonoBehaviour
         if (existingEffect == null)
         {
             existingEffect = Instantiate(effect, target.transform);
-            existingEffect.transform.SetPositionAndRotation(target.transform.position, Quaternion.LookRotation(target.transform.position - transform.position));
+            existingEffect.transform.position = target.transform.position;
+            //if (setEffectPosition)
+            //{
+            //    existingEffect.transform.SetPositionAndRotation(target.transform.position, Quaternion.LookRotation(target.transform.position - transform.position));
+            //}
             TeamHolder.AddTeamHolder(existingEffect.gameObject, Unit.gameObject);
             existingEffect.DoEffect();
             EffectsAdded++;

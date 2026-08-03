@@ -7,8 +7,13 @@ namespace TGCore.Library
     {
         public void KillYourself()
         {
-            if (transform.root.GetComponent<Unit>()) transform.root.GetComponent<Unit>().data.healthHandler.Die();
-            if (destroy) transform.root.GetComponent<Unit>().DestroyUnit();
+            var unit = transform.root.GetComponent<Unit>();
+            if (unit)
+            {
+                unit.data.healthHandler.TakeDamage(1000000f, Vector3.zero);
+                unit.data.healthHandler.Die();
+                if (destroy) unit.DestroyUnit();
+            }
         }
 
         public bool destroy;

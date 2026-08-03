@@ -52,9 +52,10 @@ namespace TGCore.Library
 			beginReelEvent?.Invoke();
 
 			var linearLimit = joint.linearLimit;
+			var initialLimit = joint.linearLimit.limit;
 
 			joint.linearLimit = linearLimit;
-	    
+
 			joint.xMotion = ConfigurableJointMotion.Limited;
 			joint.yMotion = ConfigurableJointMotion.Limited;
 			joint.zMotion = ConfigurableJointMotion.Limited;
@@ -66,15 +67,18 @@ namespace TGCore.Library
 				counter = Mathf.Clamp(counter, 0f, reelTime);
 		    
 				var relativeCounter = counter / reelTime;
-				linearLimit.limit = Mathf.Lerp(100f, 0f, linearLimitCurve.Evaluate(relativeCounter));
+				linearLimit.limit = Mathf.Lerp(100f, initialLimit, linearLimitCurve.Evaluate(relativeCounter));
 		    
 				joint.linearLimit = linearLimit;
 				yield return null;
 			}
-	    
-			joint.xMotion = ConfigurableJointMotion.Locked;
-			joint.yMotion = ConfigurableJointMotion.Locked;
-			joint.zMotion = ConfigurableJointMotion.Locked;
+
+			if (setLinearLockedAfterReel)
+			{
+				joint.xMotion = ConfigurableJointMotion.Locked;
+				joint.yMotion = ConfigurableJointMotion.Locked;
+				joint.zMotion = ConfigurableJointMotion.Locked;
+			}
 	    
 			finishReelEvent?.Invoke();
 		}
@@ -122,6 +126,7 @@ namespace TGCore.Library
 		public float reelTime = 3f;
 
 		public AnimationCurve linearLimitCurve;
+		public bool setLinearLockedAfterReel;
 
 		public UnityEvent beginReelEvent;
 		public UnityEvent finishReelEvent;

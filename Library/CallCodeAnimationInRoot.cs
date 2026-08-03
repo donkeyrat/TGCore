@@ -10,20 +10,24 @@ namespace TGCore.Library
     
         public void CallAnimation(string objName)
         {
+            if (transform.root.GetComponentsInChildren<CodeAnimation>() == null) return;
+            
             var foundAnimation = transform.root.GetComponentsInChildren<CodeAnimation>()
-                .First(x => x.gameObject.name == objName);
-            if (foundAnimation)
+                .Where(x => x.gameObject.name == objName).ToArray();
+            if (foundAnimation.Length > 0)
             {
                 switch (animationType)
                 {
                     case CodeAnimationInstance.AnimationUse.In:
-                        foundAnimation.PlayIn();
+                        foundAnimation[0].PlayIn();
                         break;
                     case CodeAnimationInstance.AnimationUse.Out:
-                        foundAnimation.PlayOut();
+                        foundAnimation[0].PlayOut();
                         break;
                     case CodeAnimationInstance.AnimationUse.Boop:
-                        foundAnimation.PlayBoop();
+                        foundAnimation[0].PlayBoop();
+                        break;
+                    case CodeAnimationInstance.AnimationUse.None:
                         break;
                 }
             }

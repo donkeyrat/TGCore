@@ -119,6 +119,11 @@ public class FloatingProjectiles : MonoBehaviour
 		var throwTime = throwCurve.keys[throwCurve.keys.Length - 1].time;
 		var stick = attackSword.gameObject.GetComponent<ProjectileStick>();
 		attackSword.gameObject.GetComponent<RaycastTrail>().enabled = true;
+		
+		var removeAfterSeconds = attackSword.gameObject.AddComponent<RemoveAfterSeconds>();
+		removeAfterSeconds.seconds = 6f;
+		removeAfterSeconds.shrink = true;
+		
 		while (counter2 < throwTime && (!stick || !stick.stuck))
 		{
 			if (!attackSword.gameObject || !targ)
@@ -132,27 +137,22 @@ public class FloatingProjectiles : MonoBehaviour
 				Quaternion.LookRotation(targ.position - attackSword.gameObject.transform.position, Vector3.up), Time.deltaTime * 7f);
 			yield return null;
 		}
-		counter2 = 0f;
-		while (counter2 < 0.5f && (!stick || !stick.stuck))
-		{
-			counter2 += Time.deltaTime;
-			if (attackSword.gameObject != null)
-			{
-				attackSword.gameObject.transform.rotation = Quaternion.Lerp(attackSword.gameObject.transform.rotation, 
-					Quaternion.LookRotation(attackSword.move.velocity, Vector3.up), Time.deltaTime * 15f);
-			}
-			yield return null;
-		}
+
+		var moveTransform = attackSword.gameObject.GetComponent<MoveTransform>();
+		moveTransform.rotationFollowVelocity = true;
+		moveTransform.gravity = 10f;
 	}
 
 	private SpookySword CreateNewSword(Vector3 pos, Quaternion rot, bool playAnimation = false)
 	{
 		var obj = new SpookySword
 		{
-			gameObject = Instantiate(sourceSword, pos, rot)
+			gameObject = Instantiate(sourceSword, pos, rot, transform.root)
 		};
 		obj.move = obj.gameObject.GetComponent<MoveTransform>();
-		obj.gameObject.FetchComponent<TeamHolder>().team = Data.team;
+		var teamHolder = obj.gameObject.FetchComponent<TeamHolder>();
+		teamHolder.team = Data.team;
+		teamHolder.spawner = Data.unit.gameObject;
 		if (playAnimation)
 		{
 			var codeAnimation = obj.gameObject.GetComponentInChildren<CodeAnimation>();

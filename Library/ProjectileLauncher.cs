@@ -1,21 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Landfall.TABS;
 using UnityEngine;
 using UnityEngine.Events;
+using Random = UnityEngine.Random;
 
 namespace TGCore.Library
 {
     public class ProjectileLauncher : MonoBehaviour
     {
-		private void Awake()
-		{
-			var ranged = GetComponent<RangeWeapon>();
-			if (ranged && ranged.ObjectToSpawn)
-			{
-				(objectToSpawn, ranged.ObjectToSpawn) = (ranged.ObjectToSpawn, objectToSpawn);
-			}
-		}
-
 		private void Start() 
 		{
 			AttackEffects = GetComponents<ProjectileLauncherEffect>();
@@ -39,6 +32,7 @@ namespace TGCore.Library
 
         public void Throw()
         {
+	        if (!CanShoot) return;
             StartCoroutine(DelayedSwing());
         }
 
@@ -73,14 +67,16 @@ namespace TGCore.Library
 				team.spawnerWeapon = gameObject;
 				team.team = OwnUnit.Team;
 				team.target = target.data.mainRig;
+				SpawnedObject?.Invoke(spawnedObject);
 			}
         }
 
 		public void SetProjectileStats(GameObject projectile, Vector3 spawnDir, Vector3 directionToTarget, Rigidbody targetRig, Vector3 shootPositionForward, Vector3 targetRigPosition, Vector3 targetRigVelocity)
 		{
-			for (var i = 0; i < projectile.transform.childCount; i++)
+			var componentsInChildren = projectile.GetComponentsInChildren<Transform>();
+			for (var i = 0; i < componentsInChildren.Length; i++)
 			{
-				var rig = projectile.transform.GetChild(i).GetComponent<Rigidbody>();
+				var rig = componentsInChildren[i].GetComponent<Rigidbody>();
 				if (rig)
 				{
 					rig.AddForce(spawnDir * 1f, ForceMode.VelocityChange);
@@ -89,10 +85,10 @@ namespace TGCore.Library
 						rig.mass *= Mathf.Pow(MyLevel.level, 1.5f);
 					}
 				}
-				var compensation = projectile.transform.GetChild(i).GetComponentInChildren<Compensation>();
+				var compensation = componentsInChildren[i].GetComponentInChildren<Compensation>();
 				if (compensation && targetRig)
 				{
-					compensation.transform.rotation = Quaternion.LookRotation(compensation.GetCompensation(targetRigPosition, targetRigVelocity, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPositionForward))) + Random.insideUnitSphere * 0.01f);
+					compensation.transform.rotation = Quaternion.Lerp(Quaternion.LookRotation(compensation.GetCompensation(targetRigPosition, targetRigVelocity, shootHelpAngleCurve.Evaluate(Vector3.Angle(directionToTarget, shootPositionForward))) + Random.insideUnitSphere * (spread * 0.01f)), Quaternion.LookRotation(shootPositionForward + 0.01f * spread * Random.insideUnitSphere), compensationUseCurve.Evaluate(Vector3.Distance(targetRigPosition, ShootPosition.transform.position)));
 				}
 				var moveTransform = projectile.GetComponentInChildren<MoveTransform>();
 				if (moveTransform)
@@ -107,7 +103,7 @@ namespace TGCore.Library
 				{
 					addForce.force.z += Mathf.Pow(Mathf.Clamp(Vector3.Distance(targetRigPosition, transform.position), 0f, compensation.clampDistance), compensation.rangePow) * compensation.forwardCompensation;
 				}
-				var projectileHit = projectile.transform.GetChild(i).GetComponentInChildren<ProjectileHit>();
+				var projectileHit = componentsInChildren[i].GetComponentInChildren<ProjectileHit>();
 				if (projectileHit)
 				{
 					projectileHit.damage *= LevelMultiplier;
@@ -115,7 +111,7 @@ namespace TGCore.Library
 					if (OwnUnit.data.input.hasControl) projectileHit.alwaysHitTeamMates = true;
 					if (MyLevel) projectileHit.ignoreTeamMates = MyLevel.ignoreTeam;
 				}
-				var collision = projectile.transform.GetChild(i).GetComponentInChildren<CollisionWeapon>();
+				var collision = componentsInChildren[i].GetComponentInChildren<CollisionWeapon>();
 				if (collision)
 				{
 					collision.damage *= LevelMultiplier;
@@ -137,12 +133,20 @@ namespace TGCore.Library
 			return result;
 		}
 
+		public void SetCanShoot(bool value)
+		{
+			CanShoot = value;
+		}
+
 		private Transform ShootPosition;
 		private Unit OwnUnit;
 		private ProjectileLauncherEffect[] AttackEffects;
 		private ProjectileLauncherShowProjectile ShowProjectile;
 		private Level MyLevel;
 		private float LevelMultiplier = 1f;
+		private bool CanShoot = true;
+
+		public event Action<GameObject> SpawnedObject;
 		
 		public UnityEvent attackEvent = new UnityEvent();
 
@@ -161,6 +165,7 @@ namespace TGCore.Library
 		[Header("Angling")]
 		
 		public AnimationCurve shootHelpAngleCurve = new AnimationCurve();
+		public AnimationCurve compensationUseCurve = new AnimationCurve();
 		public float spread;
     }
 }

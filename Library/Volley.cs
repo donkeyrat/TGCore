@@ -49,7 +49,7 @@ namespace TGCore.Library
             var hits = Physics.SphereCastAll(transform.position, targetingRadius, Vector3.up, 0.1f, LayerMask.GetMask("MainRig"));
             NearbyUnits = hits
                 .Select(hit => hit.transform.root.GetComponent<Unit>())
-                .Where(x => x && !x.data.Dead && x.Team != TeamHolder.team)
+                .Where(x => x && !x.data.Dead && (!TeamHolder || x.Team != TeamHolder.team))
                 .OrderBy(x => (x.data.mainRig.transform.position - transform.position).magnitude)
                 .Distinct()
                 .ToList();
