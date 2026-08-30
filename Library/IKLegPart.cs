@@ -35,6 +35,8 @@ public class IKLegPart : MonoBehaviour
 
     public LimbIK legIK;
     public float cooldown;
+    public float idleHoldDistance = -0.5f;
+    public float checkHeightDistance = -0.5f;
 
     [Header("Rig follow")] 
     public Rigidbody[] rigs;
@@ -60,7 +62,7 @@ public class IKLegPart : MonoBehaviour
     {
         Counter += Time.deltaTime;
         
-        if (LegDisabled && !Disabling) target.transform.position = transform.TransformPoint(new Vector3(0f, -.5f, 0f));
+        if (LegDisabled && !Disabling) target.transform.position = transform.TransformPoint(new Vector3(0f, idleHoldDistance, 0f));
         
         if (indicator) indicator.material.color = IndicatorColor;
     }
@@ -95,8 +97,8 @@ public class IKLegPart : MonoBehaviour
     {
         if (UseHeight)
         {
-            var maxHeight = transform.TransformPoint(new Vector3(0f, -.5f, 0f)).y;
-            var predictedHeight = target.transform.position.y + StepHeight;
+            var maxHeight = transform.TransformPoint(new Vector3(0f, checkHeightDistance, 0f)).y;
+            var predictedHeight = OldPosition.y + StepHeight;
             if (predictedHeight >= maxHeight)
             {
                 UseHeight = false;
@@ -123,7 +125,7 @@ public class IKLegPart : MonoBehaviour
         while (counter < 1)
         {
             counter += Time.deltaTime * StepSpeed;
-            var newPosition = transform.TransformPoint(new Vector3(0f, -.5f, 0f));
+            var newPosition = transform.TransformPoint(new Vector3(0f, idleHoldDistance, 0f));
             target.transform.position = Vector3.Lerp(OldPosition, newPosition, counter);
             yield return null;
         }

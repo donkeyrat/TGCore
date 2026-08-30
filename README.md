@@ -6,13 +6,7 @@ TG Core is a mod that does nothing, but is necessary to use other Team Grad mods
 
 ### This mod is [**open source**](https://github.com/donkeyrat/TGCore).
 
-## How To Use
-
-This mod does nothing on its own.
-
 ## Changelog
-
-The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to view the full changelog.
 
 ## 1.0.0
 
@@ -49,6 +43,9 @@ The mod's [**Github**](https://github.com/donkeyrat/TGCore) is the only place to
  
  - Added new code for the Holiday and future Hidden Units update.
  - Reduced file size.
+ 
+### 2.0.0
+* Updated code for the latest versions of Holiday, Bee Creative, and Hidden Units.
 
 ## Credits
 

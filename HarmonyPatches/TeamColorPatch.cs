@@ -15,6 +15,7 @@ namespace TGCore.HarmonyPatches
             var teamColors = ContentDatabase.Instance().GetUnitEditorColorPalette().TeamColors;
             for (var i = 0; i < teamColors.Length; i++)
             {
+                if (__instance == null || __instance.redMaterial == null) continue;
                 if (teamColors[i].m_materialRed.color == __instance.redMaterial.color)
                 {
                     __instance.SetField("m_teamColorIndex", i);

@@ -9,9 +9,13 @@ public class AddHitEffectToWeapon : MonoBehaviour
 {
     private Weapon[] Weapons;
     private SpookySwords[] SpookySwords;
+    private ProjectileLauncher[] ProjectileLaunchers;
     private static GameObject Pool;
     private Dictionary<RangeWeapon, GameObject> WeaponToProjectileDict = new Dictionary<RangeWeapon, GameObject>();
-    private Dictionary<MeleeWeapon, MeleeWeaponAddEffect> WeaponToEffectDict = new Dictionary<MeleeWeapon, MeleeWeaponAddEffect>();
+    private Dictionary<ProjectileLauncher, GameObject> LauncherToProjectileDict = new Dictionary<ProjectileLauncher, GameObject>();
+    private Dictionary<SpookySwords, GameObject> SpookyToProjectileDict = new Dictionary<SpookySwords, GameObject>();
+    private Dictionary<CollisionWeapon, MeleeWeaponAddEffect> WeaponToEffectDict = new Dictionary<CollisionWeapon, MeleeWeaponAddEffect>();
+    private Dictionary<CollisionWeaponToggleable, MeleeWeaponAddEffect> ToggleableWeaponToEffectDict = new Dictionary<CollisionWeaponToggleable, MeleeWeaponAddEffect>();
     
     public UnitEffectBase effect;
     public bool goOnStart = true;
@@ -36,6 +40,7 @@ public class AddHitEffectToWeapon : MonoBehaviour
     {
         Weapons = transform.root.GetComponentsInChildren<Weapon>();
         SpookySwords = transform.root.GetComponentsInChildren<SpookySwords>();
+        ProjectileLaunchers = transform.root.GetComponentsInChildren<ProjectileLauncher>();
         if (goOnStart) AddEffects();
     }
 
@@ -46,8 +51,7 @@ public class AddHitEffectToWeapon : MonoBehaviour
             switch (weapon)
             {
                 case MeleeWeapon meleeWeapon:
-                    var collisionWeapon = weapon.GetComponent<CollisionWeapon>();
-                    if (collisionWeapon)
+                    foreach (var collisionWeapon in meleeWeapon.GetComponentsInChildren<CollisionWeapon>()) 
                     {
                         var meleeWeaponEffect = meleeWeapon.gameObject.AddComponent<MeleeWeaponAddEffect>();
                         meleeWeaponEffect.EffectPrefab = effect;
@@ -57,7 +61,19 @@ public class AddHitEffectToWeapon : MonoBehaviour
                         effectList.Add(meleeWeaponEffect);
                         SetField(collisionWeapon, "meleeWeaponEffects", effectList.ToArray());
                         
-                        WeaponToEffectDict.Add(meleeWeapon, meleeWeaponEffect);
+                        WeaponToEffectDict.Add(collisionWeapon, meleeWeaponEffect);
+                    }
+                    foreach (var collisionWeapon in meleeWeapon.GetComponentsInChildren<CollisionWeaponToggleable>()) 
+                    {
+                        var meleeWeaponEffect = meleeWeapon.gameObject.AddComponent<MeleeWeaponAddEffect>();
+                        meleeWeaponEffect.EffectPrefab = effect;
+                        meleeWeaponEffect.ignoreTeamMates = true;
+                        
+                        var effectList = ((CollisionWeaponEffect[])GetField(collisionWeapon, "MeleeWeaponEffects")).ToList();
+                        effectList.Add(meleeWeaponEffect);
+                        SetField(collisionWeapon, "MeleeWeaponEffects", effectList.ToArray());
+                        
+                        ToggleableWeaponToEffectDict.Add(collisionWeapon, meleeWeaponEffect);
                     }
                     break;
                 case RangeWeapon rangeWeapon:
@@ -125,8 +141,8 @@ public class AddHitEffectToWeapon : MonoBehaviour
 
         foreach (var swords in SpookySwords)
         {
-            swords.sourceSword = CloneAndPoolObject(swords.sourceSword);
-            var projHits = swords.sourceSword.GetComponentsInChildren<ProjectileHit>();
+            var newSword = CloneAndPoolObject(swords.sourceSword);
+            var projHits = newSword.GetComponentsInChildren<ProjectileHit>();
             foreach (var projectileHit in projHits)
             {
                 var projectileEffect = projectileHit.gameObject.AddComponent<ProjectileHitAddEffect>();
@@ -148,6 +164,12 @@ public class AddHitEffectToWeapon : MonoBehaviour
                     }
                 }
             }
+            
+            swords.sourceSword = newSword;
+            if (!SpookyToProjectileDict.ContainsKey(swords))
+            {
+                SpookyToProjectileDict.Add(swords, newSword);
+            }
 
             var spawnedSwords = (List<SpookySword>)swords.GetField("swords");
             foreach (var sword in spawnedSwords.Where(x => x != null && x.gameObject))
@@ -164,21 +186,76 @@ public class AddHitEffectToWeapon : MonoBehaviour
                 }
             }
         }
+
+        foreach (var projectileLauncher in ProjectileLaunchers)
+        {
+            var projectile = projectileLauncher.objectToSpawn;
+            var newProjectile = CloneAndPoolObject(projectile);
+            var pooled = newProjectile.GetComponent<PooledProjectile>();
+            if (pooled)
+            {
+                Destroy(pooled);
+            }
+            
+            var projHits = newProjectile.GetComponentsInChildren<ProjectileHit>();
+            var collisionWeapons = newProjectile.GetComponentsInChildren<CollisionWeapon>();
+            var explosions = newProjectile.GetComponentsInChildren<Explosion>();
+
+            foreach (var projectileHit in projHits)
+            {
+                var projectileEffect = projectileHit.gameObject.AddComponent<ProjectileHitAddEffect>();
+                projectileEffect.EffectPrefab = effect;
+            }
+
+            foreach (var collision in collisionWeapons)
+            {
+                var meleeWeaponEffect = collision.gameObject.AddComponent<MeleeWeaponAddEffect>();
+                meleeWeaponEffect.EffectPrefab = effect;
+                meleeWeaponEffect.ignoreTeamMates = true;
+            }
+
+            foreach (var explosion in explosions)
+            {
+                if (explosion.onlyTeamMates) continue;
+                var explosionEffect = explosion.gameObject.AddComponent<AddObjectEffect>();
+                explosionEffect.EffectPrefab = effect;
+                explosionEffect.OnlyOnce = true;
+            }
+            
+            projectileLauncher.objectToSpawn = newProjectile;
+            if (!LauncherToProjectileDict.ContainsKey(projectileLauncher))
+            {
+                LauncherToProjectileDict.Add(projectileLauncher, projectile);
+            }
+        }
     }
     
     public void RemoveEffects()
     {
-        foreach (var weapon in Weapons)
+        foreach (var weapon in Weapons.Where(x => x))
         {
             switch (weapon)
             {
                 case MeleeWeapon meleeWeapon:
-                    var collisionWeapon = weapon.GetComponent<CollisionWeapon>();
-                    if (WeaponToEffectDict.TryGetValue(meleeWeapon, out var meleeWeaponEffect))
+                    foreach (var collisionWeapon in meleeWeapon.GetComponentsInChildren<CollisionWeapon>())
                     {
-                        var effectList = ((CollisionWeaponEffect[])GetField(collisionWeapon, "meleeWeaponEffects")).ToList();
-                        effectList.Remove(meleeWeaponEffect);
-                        SetField(collisionWeapon, "meleeWeaponEffects", effectList.ToArray());
+                        if (WeaponToEffectDict.TryGetValue(collisionWeapon, out var meleeWeaponEffect))
+                        {
+                            var effectList = ((CollisionWeaponEffect[])GetField(collisionWeapon, "meleeWeaponEffects")).ToList();
+                            effectList.Remove(meleeWeaponEffect);
+                            SetField(collisionWeapon, "meleeWeaponEffects", effectList.ToArray());
+                            Destroy(meleeWeaponEffect);
+                        }
+                    }
+                    foreach (var collisionWeapon in meleeWeapon.GetComponentsInChildren<CollisionWeaponToggleable>())
+                    {
+                        if (ToggleableWeaponToEffectDict.TryGetValue(collisionWeapon, out var meleeWeaponEffect))
+                        {
+                            var effectList = ((CollisionWeaponEffect[])GetField(collisionWeapon, "MeleeWeaponEffects")).ToList();
+                            effectList.Remove(meleeWeaponEffect);
+                            SetField(collisionWeapon, "MeleeWeaponEffects", effectList.ToArray());
+                            Destroy(meleeWeaponEffect);
+                        }
                     }
                     break;
                 case RangeWeapon rangeWeapon:
@@ -189,6 +266,22 @@ public class AddHitEffectToWeapon : MonoBehaviour
                     }
                     break;
                 }
+            }
+        }
+
+        foreach (var swords in SpookySwords.Where(x => x))
+        {
+            if (SpookyToProjectileDict.TryGetValue(swords, out var projectile))
+            {
+                swords.sourceSword = projectile;
+            }
+        }
+        
+        foreach (var projectileLauncher in ProjectileLaunchers.Where(x => x))
+        {
+            if (LauncherToProjectileDict.TryGetValue(projectileLauncher, out var projectile))
+            {
+                projectileLauncher.objectToSpawn = projectile;
             }
         }
     }

@@ -19,7 +19,7 @@ using UnityEngine.UI;
 
 namespace TGCore 
 {
-	[BepInPlugin("teamgrad.core", "Team Grad Core", "1.1.0")]
+	[BepInPlugin("teamgrad.core", "Team Grad Core", "2.0.0")]
 	public class TGMain : BaseUnityPlugin
 	{
 		private void Awake()

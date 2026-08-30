@@ -12,6 +12,12 @@ public class StickyWeb : MonoBehaviour
 
     private void Update()
     {
+        if (Joint && (!stick1 || !stick2 || (stick1 && stick2 && Vector3.Distance(stick1.transform.position, stick1.transform.position) > 8f)))
+        {
+            Destroy(Joint);
+            return;
+        }
+        
         if (!stick1.target || !stick2.target || Joint)
         {
             return;

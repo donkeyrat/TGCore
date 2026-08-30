@@ -4,20 +4,19 @@ using TFBGames;
 using TGCore.Library;
 using UnityEngine;
 
-namespace TGCore.HarmonyPatches
+namespace TGCore.HarmonyPatches;
+
+[HarmonyPatch(typeof(Unit), "SetHighlight")]
+internal class CustomOutlinePatch
 {
-    [HarmonyPatch(typeof(Unit), "SetHighlight")]
-    internal class CustomOutlinePatch
+    [HarmonyPostfix]
+    public static void Postfix(Unit __instance, ref Color highlightColor)
     {
-        [HarmonyPostfix]
-        public static void Postfix(Unit __instance, ref Color highlightColor)
+        if (__instance.GetComponentInChildren<ChangeOutline>() != null)
         {
-            if (__instance.GetComponentInChildren<ChangeOutline>() != null)
-            {
-                var highlighter = (IHighlight)__instance.GetField("m_highlighter");
-                highlighter.BeginHighlight();
-                highlighter.SetHighlightColor(__instance.GetComponentInChildren<ChangeOutline>().outlineColor);
-            }
+            var highlighter = (IHighlight)__instance.GetField("m_highlighter");
+            highlighter.BeginHighlight();
+            highlighter.SetHighlightColor(__instance.GetComponentInChildren<ChangeOutline>().outlineColor);
         }
     }
 }
