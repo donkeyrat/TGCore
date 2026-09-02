@@ -80,7 +80,7 @@ public class Effect_Shield : UnitEffectBase
     {
         if (!Unit || (m_gameStateManager != null && m_gameStateManager.GameState == GameState.BattleState)) return;
         
-        Unit.WasDamaged(-shieldAmount);
+        //Unit.WasDamaged(-shieldAmount);
 
         ModifyCurrentShield(amount);
     }

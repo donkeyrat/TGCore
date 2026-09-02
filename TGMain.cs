@@ -19,7 +19,7 @@ using UnityEngine.UI;
 
 namespace TGCore 
 {
-	[BepInPlugin("teamgrad.core", "Team Grad Core", "2.0.0")]
+	[BepInPlugin("teamgrad.core", "Team Grad Core", "2.0.4")]
 	public class TGMain : BaseUnityPlugin
 	{
 		private void Awake()
@@ -38,6 +38,16 @@ namespace TGCore
 			yield return new WaitUntil(() => FindObjectOfType<ServiceLocator>() != null);
 
 			ServiceLocator.GetService<CustomContentLoaderModIO>().QuickRefresh(WorkshopContentType.Unit, null);
+
+			var vampire = DB.GetUnitBlueprint(new DatabaseID(-1, 164120656));
+			if (vampire)
+			{
+				var abilities = new List<GameObject>(vampire.objectsToSpawnAsChildren)
+				{
+					tgcore.LoadAsset<GameObject>("Move_Vampire_Vampire")
+				};
+				vampire.objectsToSpawnAsChildren = abilities.ToArray();
+			}
 			
 			TGAddons.AddTeamColors(tgcore.LoadAsset<UnitEditorColorPalette>("UCColorPalette"));
 
@@ -200,6 +210,7 @@ namespace TGCore
 		public static List<TGMod> modList = new List<TGMod>();
 		
 		public static ContentDatabase DB => ContentDatabase.Instance();
+		
 		public static LandfallContentDatabase landfallDb => ContentDatabase.Instance().LandfallContentDatabase;
 		
 		public static List<SoundBank> newSounds = new List<SoundBank>();

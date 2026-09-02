@@ -7,6 +7,7 @@ using Landfall.TABS;
 using Landfall.TABS.AI;
 using Landfall.TABS.GameMode;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -242,6 +243,38 @@ namespace TGCore.Library
                             method);
                         Unit.data.healthHandler.AddDieAction(handler);
                     }
+                }
+            }
+            
+            var floatingProjectiles = Unit.GetComponentsInChildren<FloatingProjectiles>();
+            if (floatingProjectiles.Length > 0)
+            {
+                foreach (var script in floatingProjectiles)
+                {
+                    script.SetField("Done", false);
+                    var swordPoints = (ShootPosition[])script.GetField("SwordPoints");
+                    var swords = new List<SpookySword>();
+                    foreach (var point in swordPoints)
+                    {
+                        swords.Add((SpookySword)script.InvokeMethod("CreateNewSword", point.transform.position, point.transform.rotation, true));
+                    }
+                    script.SetField("Swords", swords);
+                }
+            }
+            
+            var swordCasting = Unit.GetComponentsInChildren<SpookySwords>();
+            if (swordCasting.Length > 0)
+            {
+                foreach (var script in swordCasting)
+                {
+                    script.SetField("done", false);
+                    var swordPoints = (ShootPosition[])script.GetField("swordPoints");
+                    var swords = new List<SpookySword>();
+                    foreach (var point in swordPoints)
+                    {
+                        swords.Add((SpookySword)script.InvokeMethod("CreateNewSword", point.transform.position, (quaternion)point.transform.rotation));
+                    }
+                    script.SetField("swords", swords);
                 }
             }
             

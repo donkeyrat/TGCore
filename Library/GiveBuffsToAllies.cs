@@ -93,7 +93,7 @@ public class GiveBuffsToAllies : MonoBehaviour
                 var spawnedBuff = Instantiate(buff, unit.transform.position, unit.transform.rotation, unit.transform);
                 
                 var propItem = spawnedBuff.GetComponentInChildren<PropItem>();
-                if (propItem && unit.RigType == Stitcher.TransformCatalog.RigType.Human)
+                if (propItem && unit.RigType == Stitcher.TransformCatalog.RigType.Human && !unit.GetComponent<IceGiant>())
                     propItem.Equip(unit.gameObject, 
                         new PropItemData(),
                         new Stitcher.TransformCatalog(unit.gameObject, Stitcher.TransformCatalog.RigType.Human, "M_"),

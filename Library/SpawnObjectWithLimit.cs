@@ -33,7 +33,12 @@ namespace TGCore.Library
                 {
                     spawner.spawnUnitAction += delegate(GameObject unit)
                     {
-                        unit.AddComponent<HasBeenDestroyed>().parent = this;
+                        var hasBeenDestroyed = unit.AddComponent<HasBeenDestroyed>();
+                        hasBeenDestroyed.parent = this;
+                        if (unit.GetComponent<Unit>())
+                        {
+                            unit.GetComponent<Unit>().data.healthHandler.AddDieAction(hasBeenDestroyed.OnDestroy);
+                        }
                     };
                 }
                 else
@@ -54,7 +59,7 @@ namespace TGCore.Library
 
         public class HasBeenDestroyed : MonoBehaviour
         {
-            private void OnDestroy()
+            public void OnDestroy()
             {
                 parent.TrackedLimit--;
             }
