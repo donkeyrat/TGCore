@@ -31,7 +31,7 @@ public class DetectPlacedUnits : GameStateListener
 
     protected override void OnDestroy()
     {
-        if (CurrentGameMode.BattleBudget.GetBudget(OwnUnit.Team) <= 0) return;
+        if (CurrentGameMode.BattleBudget.GetBudget(OwnUnit.Team) == CurrentGameMode.BattleBudget.GetMaxBudget(OwnUnit.Team)) return;
         foreach (var unit in ExtraUnits.Where(x => x && !x.IsRider))
         {
             CurrentGameMode.Brush.BrushBehaviour.RemoveUnit(unit);

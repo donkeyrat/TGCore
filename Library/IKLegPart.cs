@@ -84,12 +84,12 @@ public class IKLegPart : MonoBehaviour
             var vector2 = (0f - Vector3.Angle(up, rigs[i].transform.up)) * Vector3.Cross(up, rigs[i].transform.up).normalized;
         
             rigs[i].AddTorque((vector + vector2) * (Time.fixedDeltaTime * muscleControl * 200f * rotationForce * (disabledFlag ? disabledMultiplier : 1f)), ForceMode.Acceleration);
-            rigs[i].angularVelocity -= rigs[i].angularVelocity * (drag * muscleControl);
+            rigs[i].angularVelocity -= rigs[i].angularVelocity * (drag * muscleControl * Time.fixedDeltaTime);
         
             var position = rigFollows[i].position;
             var vector3 = position - rigs[i].transform.position;
             rigs[i].AddForce(vector3 * (200f * muscleControl * force * Time.fixedDeltaTime * (disabledFlag ? disabledMultiplier : 1f)), ForceMode.Acceleration);
-            rigs[i].velocity -= rigs[i].velocity * (drag * muscleControl);
+            rigs[i].velocity -= rigs[i].velocity * (drag * muscleControl * Time.fixedDeltaTime);
         }
     }
     

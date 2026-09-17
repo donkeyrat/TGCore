@@ -24,13 +24,14 @@ namespace TGCore.Library
             Virus,
             Support
         }
-    
+        
         private Unit Unit;
         private UnitColorHandler ColorHandler;
         private GameObject Weapon1;
         private GameObject Weapon2;
     
         private bool Done;
+        private bool DeathEventDone;
         private float CurrentProgress;
         private float LerpProgress;
         
@@ -44,6 +45,7 @@ namespace TGCore.Library
         
         public UnityEvent killEvent;
         public UnityEvent reviveEvent;
+        public UnityEvent deathAfterReviveEvent;
         
         public float reviveDelay;
     
@@ -148,9 +150,6 @@ namespace TGCore.Library
         private IEnumerator DoZombieChecks()
         {
             if (Done) yield break;
-            //yield return new WaitForSeconds(0.05f);
-            //if (Done) yield break;
-    
             if (CurrentProgress >= 0.5f)
             {
                 Unit.data.healthHandler.willBeRewived = true;
@@ -424,6 +423,21 @@ namespace TGCore.Library
         
         public void Update()
         {
+            var isDead = !Unit || (!Unit.data.healthHandler.willBeRewived && Unit.data.Dead);
+            if (isDead)
+            {
+                if (LerpProgress > 0f)
+                {
+                    LerpProgress -= Time.deltaTime;
+                }
+
+                if (!DeathEventDone)
+                {
+                    deathAfterReviveEvent.Invoke();
+                    DeathEventDone = true;
+                }
+            }
+            
             if (ColorHandler)
             {
                 ColorHandler.SetColor(color, LerpProgress);

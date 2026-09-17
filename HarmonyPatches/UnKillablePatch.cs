@@ -10,7 +10,7 @@ namespace TGCore.HarmonyPatches
         [HarmonyPrefix]
         public static bool Prefix(HealthHandler __instance, ref Unit damager)
         {
-            return !__instance.transform.root.GetComponentInChildren<UnKillable>();
+            return !__instance.transform.root.GetComponentInChildren<UnKillable>() || __instance.transform.root.GetComponentInChildren<Effect_IceArrow>() || __instance.transform.root.GetComponentInChildren<Effect_Frostbite>();
         }
     }
 }

@@ -6,40 +6,8 @@ namespace TGCore.Library
 {
     public class RiseOnSpawn : MonoBehaviour
     {
-        private void Start()
-        {
-            OwnData = GetComponent<Unit>().data;
-            StartCoroutine(DoRise());
-        }
-
-        private IEnumerator DoRise()
-        {
-            OwnData.mainRig.isKinematic = true;
-            yield return new WaitForSeconds(startDelay);
-            
-            var t = 0f;
-            while (t < time)
-            {
-                foreach (var rig in OwnData.allRigs.AllRigs)
-                {
-                    if (setRigsKinematic && (setArmsKinematic || (rig.transform != OwnData.leftArm && rig.transform != OwnData.rightArm && rig.transform != OwnData.leftHand && rig.transform != OwnData.rightHand)))
-                    {
-                        rig.isKinematic = true;
-                    }
-                }
-                
-                transform.position += Vector3.up * (Mathf.Clamp(t * 0.1f, 0f, 1f) * Time.deltaTime * moveMultiplier);
-                
-                t += Time.deltaTime;
-                yield return null;
-            }
-
-            foreach (var rig in OwnData.allRigs.AllRigs)
-            {
-                rig.isKinematic = false;
-            }
-        }
-        
+        private float StartCounter;
+        private float Counter;
         private DataHandler OwnData;
 
         public float startDelay;
@@ -51,5 +19,39 @@ namespace TGCore.Library
         public bool setRigsKinematic = true;
         
         public bool setArmsKinematic;
+        
+        private void Start()
+        {
+            OwnData = GetComponent<Unit>().data;
+            OwnData.mainRig.isKinematic = true;
+        }
+
+        private void FixedUpdate()
+        {
+            StartCounter += Time.deltaTime;
+            if (StartCounter < startDelay) return;
+
+            if (Counter < time)
+            {
+                foreach (var rig in OwnData.allRigs.AllRigs)
+                {
+                    if (setRigsKinematic && (setArmsKinematic || (rig.transform != OwnData.leftArm && rig.transform != OwnData.rightArm && rig.transform != OwnData.leftHand && rig.transform != OwnData.rightHand)))
+                    {
+                        rig.isKinematic = true;
+                    }
+                }
+                
+                transform.position += Vector3.up * (Mathf.Clamp(Counter * 0.1f, 0f, 1f) * Time.deltaTime * moveMultiplier);
+                
+                Counter += Time.deltaTime;
+                return;
+            }
+
+            foreach (var rig in OwnData.allRigs.AllRigs)
+            {
+                rig.isKinematic = false;
+            }
+            Destroy(this);
+        }
     }
 }
